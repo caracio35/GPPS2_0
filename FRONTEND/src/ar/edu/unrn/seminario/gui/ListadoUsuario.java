@@ -62,7 +62,8 @@ public class ListadoUsuario extends JFrame {
 		List<UsuarioDTO> usuarios = api.obtenerUsuarios();
 		// Agrega los usuarios en el model
 		for (UsuarioDTO u : usuarios) {
-			modelo.addRow(new Object[] { u.getUsername(), u.getNombre(), u.getEmail(), u.getEstado(), u.getRol() });
+			modelo.addRow(new Object[] { u.getUsername(), u.getPersona().getNombre(), u.getEmail(), u.getEstado(),
+					u.getRol() });
 		}
 
 		table.setModel(modelo);
@@ -110,7 +111,7 @@ public class ListadoUsuario extends JFrame {
 				dispose();
 			}
 		});
-//		contentPane.add(cerrarButton, BorderLayout.SOUTH);
+		// contentPane.add(cerrarButton, BorderLayout.SOUTH);
 
 		JPanel pnlBotonesOperaciones = new JPanel();
 		pnlBotonesOperaciones.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -130,17 +131,6 @@ public class ListadoUsuario extends JFrame {
 	}
 
 	private void actualizarTabla() {
-		// Obtiene el model del table
-		DefaultTableModel modelo = (DefaultTableModel) table.getModel();
-		// Obtiene la lista de usuarios a mostrar
-		List<UsuarioDTO> usuarios = api.obtenerUsuarios();
-		// Resetea el model
-		modelo.setRowCount(0);
-
-		// Agrega los usuarios en el model
-		for (UsuarioDTO u : usuarios) {
-			modelo.addRow(new Object[] { u.getUsername(), u.getNombre(), u.getEmail(), u.getEstado(), u.getRol() });
-		}
 
 	}
 

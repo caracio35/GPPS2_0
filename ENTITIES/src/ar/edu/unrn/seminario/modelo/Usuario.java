@@ -3,16 +3,16 @@ package ar.edu.unrn.seminario.modelo;
 public class Usuario {
 	private String usuario;
 	private String contrasena;
-	private String nombre;
+	private Persona persona;
 	private String email;
 	private Rol rol;
 	private boolean activo;
 
-	public Usuario(String usuario, String contrasena, String nombre, String email, Rol rol) {
+	public Usuario(String usuario, String contrasena, String email, Rol rol, Persona persona) {
 
 		this.usuario = usuario;
 		this.contrasena = contrasena;
-		this.nombre = nombre;
+		this.persona = persona;
 		this.email = email;
 		this.rol = rol;
 	}
@@ -31,14 +31,6 @@ public class Usuario {
 
 	public void setContrasena(String contrasena) {
 		this.contrasena = contrasena;
-	}
-
-	public String getNombre() {
-		return nombre;
-	}
-
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
 	}
 
 	public String getEmail() {
@@ -75,29 +67,24 @@ public class Usuario {
 			this.activo = false;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((usuario == null) ? 0 : usuario.hashCode());
-		return result;
+	public Persona getPersona() {
+		return persona;
+	}
+
+	public void setPersona(Persona persona) {
+		this.persona = persona;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Usuario other = (Usuario) obj;
-		if (usuario == null) {
-			if (other.usuario != null)
-				return false;
-		} else if (!usuario.equals(other.usuario))
-			return false;
-		return true;
+	public String toString() {
+		return "Usuario{" +
+				"usuario='" + usuario + '\'' +
+				", contrasena='" + contrasena + '\'' +
+				", persona=" + persona +
+				", email='" + email + '\'' +
+				", rol=" + rol +
+				", activo=" + activo +
+				'}';
 	}
 
 }

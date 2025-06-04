@@ -3,7 +3,7 @@ package ar.edu.unrn.seminario.dto;
 public class UsuarioDTO {
 	private String username;
 	private String password;
-	private String nombre;
+	private PersonaDTO persona;
 	private String email;
 	private String rol;
 	private boolean activo;
@@ -14,7 +14,7 @@ public class UsuarioDTO {
 		super();
 		this.username = username;
 		this.password = password;
-		this.nombre = nombre;
+
 		this.email = email;
 		this.rol = rol;
 		this.activo = activo;
@@ -35,14 +35,6 @@ public class UsuarioDTO {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getNombre() {
-		return nombre;
-	}
-
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
 	}
 
 	public String getEmail() {
@@ -77,4 +69,24 @@ public class UsuarioDTO {
 		this.estado = estado;
 	}
 
+	public PersonaDTO getPersona() {
+		return persona;
+	}
+
+	public void setPersona(PersonaDTO persona) {
+		this.persona = persona;
+	}
+
+	@Override
+	public String toString() {
+		return "UsuarioDTO{" +
+				"username='" + username + '\'' +
+				", password='" + password + '\'' +
+				", persona=" + persona +
+				", email='" + email + '\'' +
+				", rol='" + rol + '\'' +
+				", activo=" + activo +
+				", estado='" + estado + '\'' +
+				'}';
+	}
 }
