@@ -8,7 +8,7 @@ public class Usuario {
 	private Rol rol;
 	private boolean activo;
 
-	public Usuario(String usuario, String contrasena, String email, Rol rol, Persona persona) {
+	public Usuario(String usuario, String contrasena, String email, boolean activo2, Rol rol, Persona persona) {
 
 		this.usuario = usuario;
 		this.contrasena = contrasena;
