@@ -22,3 +22,10 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+.idea/GPPS2_0.iml
+.idea/libraries/mysql_connector_java_5_1_48.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+BACKEND/BACKEND.iml
+BACKEND/BACKEND.iml
