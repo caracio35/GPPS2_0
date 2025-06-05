@@ -5,16 +5,16 @@ public class UsuarioDTO {
 	private String password;
 	private PersonaDTO persona;
 	private String email;
-	private String rol;
+	private int rol;
 	private boolean activo;
 	private String estado;
 
-	public UsuarioDTO(String username, String password, String nombre, String email, String rol, boolean activo,
+	public UsuarioDTO(String username, String password, PersonaDTO persona, String email, int rol, boolean activo,
 			String estado) {
 		super();
 		this.username = username;
 		this.password = password;
-
+		this.persona = persona ;
 		this.email = email;
 		this.rol = rol;
 		this.activo = activo;
@@ -45,11 +45,11 @@ public class UsuarioDTO {
 		this.email = email;
 	}
 
-	public String getRol() {
+	public int getRol() {
 		return rol;
 	}
 
-	public void setRol(String rol) {
+	public void setRol(int rol) {
 		this.rol = rol;
 	}
 

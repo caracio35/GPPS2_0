@@ -18,6 +18,7 @@ public class PersonaDAOJDBC {
         } catch (java.sql.SQLException e) {
             System.out.println("Error al insertar persona: " + e.getMessage());
             // TODO: disparar Exception propia
+            e.printStackTrace();
         } finally {
             ConnectionManager.disconnect();
         }
@@ -43,6 +44,7 @@ public class PersonaDAOJDBC {
         } catch (java.sql.SQLException e) {
             System.out.println("Error al buscar persona: " + e.getMessage());
             // TODO: disparar Exception propia
+            e.printStackTrace();
         } finally {
             ConnectionManager.disconnect();
         }

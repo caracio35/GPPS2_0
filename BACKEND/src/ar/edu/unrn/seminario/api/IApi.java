@@ -7,7 +7,7 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
 
 public interface IApi {
 
-	void registrarUsuario(String username, String password, String email, String nombre, Integer rol);
+	void registrarUsuario(UsuarioDTO usuario);
 
 	UsuarioDTO obtenerUsuario(String username);
 

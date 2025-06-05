@@ -26,6 +26,7 @@ public class RolDAOJDBC implements RolDao {
 		} catch (SQLException e) {
 			System.out.println("Error al insertar rol: " + e.getMessage());
 			// TODO: disparar Exception propia
+			e.printStackTrace();
 		} finally {
 			ConnectionManager.disconnect();
 		}
@@ -70,8 +71,10 @@ public class RolDAOJDBC implements RolDao {
 		} catch (SQLException e) {
 			System.out.println("Error al procesar consulta");
 			// TODO: disparar Exception propia
+			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO: disparar Exception propia
+			e.printStackTrace();
 		} finally {
 			ConnectionManager.disconnect();
 		}
@@ -98,6 +101,7 @@ public class RolDAOJDBC implements RolDao {
 			System.out.println("Error de mySql\n" + e.toString());
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
+			
 		} finally {
 			ConnectionManager.disconnect();
 		}
