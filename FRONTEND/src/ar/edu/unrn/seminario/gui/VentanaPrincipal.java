@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -28,75 +29,91 @@ public class VentanaPrincipal extends JFrame {
 		setBounds(100, 100, 800, 300);
 		setLocationRelativeTo(null);
 
-		RolDTO rolDto = api.obtenerRolPorCodigo(usuario.getRol());
-		String nombreRol = rolDto.getNombre().toLowerCase();
-
-		// Crear barra de menú
-		JMenuBar menuBar = new JMenuBar();
-		setJMenuBar(menuBar);
-
-		// PRIMERO: agregar botones según el rol (aparecen a la izquierda)
-		if (nombreRol.equals("institución")) {
-			menuBar.add(crearBotonMenu("Crear Propuesta"));
-			menuBar.add(crearBotonMenu("Ver Estado de Propuestas"));
-		} else if (nombreRol.equals("alumno")) {
-			menuBar.add(crearBotonMenu("Ver Propuestas"));
-			menuBar.add(crearBotonMenu("Subir Informe Final"));
-		} else if (nombreRol.equals("tutor")) {
-			menuBar.add(crearBotonMenu("Revisar Propuestas"));
-			menuBar.add(crearBotonMenu("Evaluar Alumno"));
-		} else if (nombreRol.equals("profesor")) {
-			menuBar.add(crearBotonMenu("Asignar Propuesta"));
-		} else if (nombreRol.equals("directorcarrera") || nombreRol.equals("director de carrera")) {
-			menuBar.add(crearBotonMenu("Validar Propuestas"));
-			menuBar.add(crearBotonMenu("Ver Informes Finales"));
-		}
-
-		// LUEGO: agregar menús comunes (aparecen después de los botones)
-		if (!nombreRol.equals("institución")) {
-			JMenu usuarioMenu = new JMenu("Usuarios");
-
-			JMenuItem altaUsuario = new JMenuItem("Alta/Modificación");
-			JMenuItem listado = new JMenuItem("Listado");
-			listado.addActionListener(e -> {
-				ListadoUsuario listadoUsuario = new ListadoUsuario(api);
-				listadoUsuario.setVisible(true);
-			});
-
-			usuarioMenu.add(altaUsuario);
-			usuarioMenu.add(listado);
-			menuBar.add(usuarioMenu);
-
-			JMenu configuracionMenu = new JMenu("Configuración");
-			JMenuItem salir = new JMenuItem("Salir");
-			salir.addActionListener(e -> System.exit(0));
-			configuracionMenu.add(salir);
-			menuBar.add(configuracionMenu);
-		}
-
-		// Contenido principal
 		contentPane = new JPanel();
 		contentPane.setLayout(new BorderLayout());
 		setContentPane(contentPane);
 
-		// Mostrar mensaje de bienvenida en el centro
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+
+		RolDTO rolDto = api.obtenerRolPorCodigo(usuario.getRol());
+		String nombreRol = rolDto.getNombre().toLowerCase();
+
+		inicializarMenuPorRol(menuBar, nombreRol, api, usuario);
+		if (!nombreRol.equals("institución")) {
+			inicializarMenusComunes(menuBar, api);
+		}
+		mostrarMensajeBienvenida(usuario);
+	}
+
+	private void inicializarMenuPorRol(JMenuBar menuBar, String rol, IApi api, UsuarioDTO usuario) {
+		if (rol.equals("institución")) {
+			menuBar.add(crearBotonMenu("Crear Propuesta", () -> {
+				CargarPropuesta crear = new CargarPropuesta(this, api, usuario);
+				crear.setVisible(true);
+			}));
+			menuBar.add(crearBotonMenu("Ver Estado de Propuestas", () -> {
+				// VentanaVerPropuesta ver = new VentanaVerPropuesta(api, usuario);
+				// ver.setVisible(true);
+			}));
+		} else if (rol.equals("alumno")) {
+			menuBar.add(crearBotonMenu("Ver Propuestas", () -> {
+				// VentanaVerPropuesta ver = new VentanaVerPropuesta(api, usuario);
+				// ver.setVisible(true);
+			}));
+			menuBar.add(crearBotonMenu("Subir Informe Final", () ->
+					JOptionPane.showMessageDialog(this, "Aquí iría la lógica para subir informe final.")
+			));
+		} else if (rol.equals("tutor")) {
+			menuBar.add(crearBotonMenu("Revisar Propuestas", () -> {}));
+			menuBar.add(crearBotonMenu("Evaluar Alumno", () -> {}));
+		} else if (rol.equals("profesor")) {
+			menuBar.add(crearBotonMenu("Asignar Propuesta", () -> {}));
+		} else if (rol.equals("directorcarrera") || rol.equals("director de carrera")) {
+			menuBar.add(crearBotonMenu("Validar Propuestas", () -> {}));
+			menuBar.add(crearBotonMenu("Ver Informes Finales", () -> {}));
+		}
+	}
+
+	private void inicializarMenusComunes(JMenuBar menuBar, IApi api) {
+		JMenu usuarioMenu = new JMenu("Usuarios");
+
+		JMenuItem altaUsuario = new JMenuItem("Alta/Modificación");
+		JMenuItem listado = new JMenuItem("Listado");
+		listado.addActionListener(e -> {
+			ListadoUsuario listadoUsuario = new ListadoUsuario(api);
+			listadoUsuario.setVisible(true);
+		});
+
+		usuarioMenu.add(altaUsuario);
+		usuarioMenu.add(listado);
+		menuBar.add(usuarioMenu);
+
+		JMenu configuracionMenu = new JMenu("Configuración");
+		JMenuItem salir = new JMenuItem("Salir");
+		salir.addActionListener(e -> System.exit(0));
+		configuracionMenu.add(salir);
+		menuBar.add(configuracionMenu);
+	}
+
+	private void mostrarMensajeBienvenida(UsuarioDTO usuario) {
 		String nombre = "(usuario)";
 		if (usuario.getPersona() != null) {
 			nombre = usuario.getPersona().getNombre();
 		}
-
 		JLabel bienvenida = new JLabel("Bienvenido/a " + nombre, SwingConstants.CENTER);
 		bienvenida.setFont(new Font("SansSerif", Font.BOLD, 20));
 		contentPane.add(bienvenida, BorderLayout.CENTER);
 	}
 
-	private Component crearBotonMenu(String texto) {
+	private Component crearBotonMenu(String texto, Runnable accion) {
 		JButton boton = new JButton(texto);
 		boton.setFocusPainted(false);
 		boton.setBorderPainted(false);
 		boton.setContentAreaFilled(false);
 		boton.setOpaque(false);
 		boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		boton.addActionListener(e -> accion.run());
 		return boton;
 	}
 }

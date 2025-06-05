@@ -4,13 +4,20 @@ package ar.edu.unrn.seminario.gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import ar.edu.unrn.seminario.api.IApi;
+import ar.edu.unrn.seminario.dto.UsuarioDTO;
+
 import java.awt.*;
 
 public class CargarPropuesta extends JDialog {
 
-    public CargarPropuesta(JFrame parent) {
+	private IApi api ;
+	
+    public CargarPropuesta(JFrame parent , IApi api , UsuarioDTO usuario ) {
         super(parent, "Cargar Propuesta (Demo)", true);
-
+        
+        this.api = api ;
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -125,11 +132,5 @@ public class CargarPropuesta extends JDialog {
         return panel;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            CargarPropuesta dialog = new CargarPropuesta(null);
-            dialog.setVisible(true);
-        });
-    }
 }
 
