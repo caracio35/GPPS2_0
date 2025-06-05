@@ -32,3 +32,4 @@ BACKEND/BACKEND.iml
 .idea/libraries/mysql_connector_j_9_3_0.xml
 COMMONS/COMMONS.iml
 .idea/vcs.xml
+.idea/codeStyles/codeStyleConfig.xml
