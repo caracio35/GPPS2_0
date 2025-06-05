@@ -66,7 +66,7 @@ public class PersistenceApi implements IApi {
 		        		u.getEmail(),
 		        		u.getRol().getCodigo(),
 		        		u.isActivo(),
-		        		null //preguntar esto a jose
+		        		null //preguntar esto a jose 
 		        );
 
 		        dtos.add(dto);
