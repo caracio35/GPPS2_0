@@ -26,6 +26,7 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
 
         private JComboBox<UsuarioDTO> comboUsuarios;
         private JButton btnSeleccionar;
+        
 
         public ListadoUsuario(IApi api) {
             setTitle("Seleccionar Usuario");
@@ -41,8 +42,9 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
             btnSeleccionar.addActionListener(e -> {
                 UsuarioDTO seleccionado = (UsuarioDTO) comboUsuarios.getSelectedItem();
                 if (seleccionado != null) {
-                    //aca iria la ventana nueva 
+                   ingresarSegunRol(api);
                 }
+                dispose();
             });
 
             JPanel panel = new JPanel();
@@ -85,4 +87,55 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
                 comboUsuarios.addItem(copia);
             }
         }
+        private void ingresarSegunRol(IApi api ) {
+    	    UsuarioDTO usuario = (UsuarioDTO) comboUsuarios.getSelectedItem();
+
+    	    if (usuario == null) {
+    	        JOptionPane.showMessageDialog(this, "Por favor, seleccioná un usuario.");
+    	        return;
+    	    }
+
+    	    // Obtener el nombre del rol desde la base usando el codigo de rol
+    	    RolDTO rolDTO = api.obtenerRolPorCodigo(usuario.getRol()); 
+    	    if (rolDTO == null) {
+    	        JOptionPane.showMessageDialog(this, "❌ Rol no encontrado para el usuario.");
+    	        return;
+    	    }
+
+    	    String rol = rolDTO.getNombre().toLowerCase();
+
+    	    switch (rol) {
+    	        case "institución":
+    	        	VentanaPrincipal ventana = new VentanaPrincipal(api, usuario);
+    	        	ventana.setVisible(true);
+    	            break;
+    	        case "alumno":
+    	        	VentanaPrincipal ventana1 = new VentanaPrincipal(api, usuario);
+    	        	ventana1.setVisible(true);
+    	            break;
+    	        case "tutor":
+    	        	VentanaPrincipal ventana11 = new VentanaPrincipal(api, usuario);
+    	        	ventana11.setVisible(true);
+    	            break;
+    	        case "profesor":
+    	        	VentanaPrincipal ventanaProfesor= new VentanaPrincipal(api, usuario);
+    	        	ventanaProfesor.setVisible(true);
+    	           
+    	            break;
+    	        case "administrador":
+    	        	VentanaPrincipal ventana111 = new VentanaPrincipal(api, usuario);
+    	        	ventana111.setVisible(true);
+    	        	break;
+    	        	
+    	        case "director de carrera":
+    	        	VentanaPrincipal ventanaDirector = new VentanaPrincipal(api, usuario);
+    	        	ventanaDirector.setVisible(true);
+    	            break;
+    	        default:
+    	            JOptionPane.showMessageDialog(this, "Rol desconocido: " + rol);
+    	            return;
+    	    }
+
+    	    dispose();
+    	}
     }

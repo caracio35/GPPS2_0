@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.api.PersistenceApi;
+import ar.edu.unrn.seminario.gui.ListadoUsuario;
 import ar.edu.unrn.seminario.gui.VentanaPrincipal;
 
 
@@ -16,7 +17,7 @@ public class Main {
 				try {
 
 					IApi api = new PersistenceApi();
-					VentanaPrincipal frame = new VentanaPrincipal(api);
+					ListadoUsuario frame = new ListadoUsuario(api);
 
 					frame.setVisible(true);
 				} catch (Exception e) {
