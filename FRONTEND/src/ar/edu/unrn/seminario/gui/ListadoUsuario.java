@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -18,120 +19,70 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 
 import ar.edu.unrn.seminario.api.IApi;
+import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
 
-public class ListadoUsuario extends JFrame {
+    public class ListadoUsuario extends JFrame {
 
-	private JPanel contentPane;
-	private JTable table;
-	DefaultTableModel modelo;
-	IApi api;
-	JButton activarButton;
-	JButton desactivarButton;
+        private JComboBox<UsuarioDTO> comboUsuarios;
+        private JButton btnSeleccionar;
 
-	/**
-	 * Create the frame.
-	 */
-	public ListadoUsuario(IApi api) {
-		this.api = api;
+        public ListadoUsuario(IApi api) {
+            setTitle("Seleccionar Usuario");
+            setSize(400, 150);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLayout(new BorderLayout());
 
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
+            comboUsuarios = new JComboBox<>();
+            cargarUsuarios(api);
 
-		JScrollPane scrollPane = new JScrollPane();
-		contentPane.add(scrollPane, BorderLayout.CENTER);
+            btnSeleccionar = new JButton("Seleccionar Usuario");
+            btnSeleccionar.addActionListener(e -> {
+                UsuarioDTO seleccionado = (UsuarioDTO) comboUsuarios.getSelectedItem();
+                if (seleccionado != null) {
+                    //aca iria la ventana nueva 
+                }
+            });
 
-		table = new JTable();
-		String[] titulos = { "USUARIO", "NOMBRE", "EMAIL", "ESTADO", "ROL" };
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.add(comboUsuarios, BorderLayout.CENTER);
+            panel.add(btnSeleccionar, BorderLayout.SOUTH);
 
-		table.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				// Habilitar botones
-				habilitarBotones(true);
+            add(panel, BorderLayout.CENTER);
 
-			}
-		});
-		modelo = new DefaultTableModel(new Object[][] {}, titulos);
+            setVisible(true);
+        }
 
-		// Obtiene la lista de usuarios a mostrar
-		List<UsuarioDTO> usuarios = api.obtenerUsuarios();
-		// Agrega los usuarios en el model
-		for (UsuarioDTO u : usuarios) {
-			modelo.addRow(new Object[] { u.getUsername(), u.getPersona().getNombre(), u.getEmail(), u.getEstado(),
-					u.getRol() });
-		}
+        private void cargarUsuarios(IApi api) {
+            List<UsuarioDTO> usuarios = api.obtenerUsuarios();
 
-		table.setModel(modelo);
+            for (UsuarioDTO usuario : usuarios) {
+                RolDTO rol = api.obtenerRolPorCodigo(usuario.getRol());
 
-		scrollPane.setViewportView(table);
+                String nombre = (usuario.getPersona() != null)
+                        ? usuario.getPersona().getNombre()
+                        : "(sin persona)";
 
-		activarButton = new JButton("Activar");
-		activarButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int opcionSeleccionada = JOptionPane.showConfirmDialog(null,
-						"Estas seguro que queres cambiar el estado del Usuario?", "Confirmar cambio de estado.",
-						JOptionPane.YES_NO_OPTION);
-				if (opcionSeleccionada == JOptionPane.YES_OPTION) {
-					String username = (String) table.getModel().getValueAt(table.getSelectedRow(), 0);
+                // Modificamos el toString dinámicamente (solo para mostrar en combo)
+                UsuarioDTO copia = new UsuarioDTO(
+                        usuario.getUsername(),
+                        usuario.getPassword(),
+                        usuario.getPersona(),
+                        usuario.getEmail(),
+                        rol.getCodigo(),
+                        usuario.isActivo(),
+                        usuario.getEstado()
+                        
+                ) {
+                    @Override
+                    public String toString() {
+                        return getUsername() + " - " + nombre + " - " + getEmail() + " - " + rol.getNombre();
+                    }
+                };
 
-					api.activarUsuario(username);
-					actualizarTabla();
-
-				}
-
-			}
-
-		});
-
-		desactivarButton = new JButton("Desactivar");
-		desactivarButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int reply = JOptionPane.showConfirmDialog(null,
-						"Estas seguro que queres cambiar el estado del Usuario?", "Confirmar cambio de estado.",
-						JOptionPane.YES_NO_OPTION);
-				if (reply == JOptionPane.YES_OPTION) {
-					String username = (String) table.getModel().getValueAt(table.getSelectedRow(), 0);
-
-					api.desactivarUsuario(username);
-					actualizarTabla();
-
-				}
-			}
-		});
-
-		JButton cerrarButton = new JButton("Cerrar");
-		cerrarButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-				dispose();
-			}
-		});
-		// contentPane.add(cerrarButton, BorderLayout.SOUTH);
-
-		JPanel pnlBotonesOperaciones = new JPanel();
-		pnlBotonesOperaciones.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		contentPane.add(pnlBotonesOperaciones, BorderLayout.SOUTH);
-		pnlBotonesOperaciones.add(desactivarButton);
-		pnlBotonesOperaciones.add(activarButton);
-		pnlBotonesOperaciones.add(cerrarButton);
-
-		// Deshabilitar botones que requieren tener una fila seleccionada
-		habilitarBotones(false);
-	}
-
-	private void habilitarBotones(boolean b) {
-		activarButton.setEnabled(b);
-		desactivarButton.setEnabled(b);
-
-	}
-
-	private void actualizarTabla() {
-
-	}
-
-}
+                comboUsuarios.addItem(copia);
+            }
+        }
+    }
