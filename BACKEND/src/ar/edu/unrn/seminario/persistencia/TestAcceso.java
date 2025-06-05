@@ -20,7 +20,7 @@ public class TestAcceso {
 //		usuarioDao.create(usuario);
 		
 //		List<Usuario> usuarios = usuarioDao.findAll();
-//			for (Usuario u: usuarios) {
+//			for (Usuario u: usuarios) {	
 //			System.out.println(u);
 //		}
 			
