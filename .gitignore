@@ -33,3 +33,9 @@ BACKEND/BACKEND.iml
 COMMONS/COMMONS.iml
 .idea/vcs.xml
 .idea/codeStyles/codeStyleConfig.xml
+.DS_Store
+BACKEND/BACKEND.iml
+COMMONS/COMMONS.iml
+ENTITIES/ENTITIES.iml
+FRONTEND/FRONTEND.iml
+COMMONS/COMMONS.iml
