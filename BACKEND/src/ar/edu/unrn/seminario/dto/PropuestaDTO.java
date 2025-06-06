@@ -1,5 +1,7 @@
 package ar.edu.unrn.seminario.dto;
 
+import java.util.List;
+
 public class PropuestaDTO {
     private String titulo;
     private String descripcion;
@@ -11,11 +13,12 @@ public class PropuestaDTO {
     private UsuarioDTO alumno;
     private UsuarioDTO profesor;
     private UsuarioDTO tutor;
+    private List<ActividadDTO> actividades;
 
     public PropuestaDTO(String titulo, String descripcion, String areaDeInteres,
                         String objetivo, String comentarios, int aceptados,
                         UsuarioDTO creador, UsuarioDTO alumno,
-                        UsuarioDTO profesor, UsuarioDTO tutor) {
+                        UsuarioDTO profesor, UsuarioDTO tutor, List<ActividadDTO> actividades) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.areaDeInteres = areaDeInteres;
@@ -26,13 +29,21 @@ public class PropuestaDTO {
         this.alumno = alumno;
         this.profesor = profesor;
         this.tutor = tutor;
+        this.actividades = actividades;
     }
 
     public PropuestaDTO(String titulo, String descripcion, String areaDeInteres,
                         String objetivo, String comentarios, int aceptados,
-                        UsuarioDTO creador) {
-        this(titulo, descripcion, areaDeInteres, objetivo, comentarios,
-                aceptados, creador, null, null, null);
+                        UsuarioDTO creador,List<ActividadDTO> actividades) {
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.areaDeInteres = areaDeInteres;
+        this.objetivo = objetivo;
+        this.comentarios = comentarios;
+        this.aceptados = aceptados;
+        this.creador = creador;
+        this.actividades = actividades;
+        this.alumno = null;
     }
 
     public String getTitulo() {

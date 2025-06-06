@@ -1,5 +1,7 @@
 package ar.edu.unrn.seminario.modelo;
 
+import java.util.List;
+
 public class Propuesta {
     private String titulo;
     private String descripcion;
@@ -11,9 +13,10 @@ public class Propuesta {
     private Usuario alumno;
     private Usuario profesor;
     private Usuario tutor;
+    private List<Actividad> actividades;
 
 
-    public Propuesta(String titulo, String descripcion, String areaDeInteres, String objetivo, String comentarios, int aceptados, Usuario creador) {
+    public Propuesta(String titulo, String descripcion, String areaDeInteres, String objetivo, String comentarios, int aceptados, Usuario creador, List<Actividad> actividades) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.areaDeInteres = areaDeInteres;
@@ -24,9 +27,10 @@ public class Propuesta {
         this.alumno = null;
         this.profesor = null;
         this.tutor = null;
+        this.actividades = actividades;
     }
 
-    public Propuesta(String titulo, String descripcion, String areaDeInteres, String objetivo, String comentarios, int aceptados, Usuario creador, Usuario alumno, Usuario profesor, Usuario tutor) {
+    public Propuesta(String titulo, String descripcion, String areaDeInteres, String objetivo, String comentarios, int aceptados, Usuario creador, Usuario alumno, Usuario profesor, Usuario tutor, List<Actividad> actividades) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.areaDeInteres = areaDeInteres;
@@ -37,6 +41,7 @@ public class Propuesta {
         this.alumno = alumno;
         this.profesor = profesor;
         this.tutor = tutor;
+        this.actividades= actividades;
     }
 
     public String getTitulo() {
@@ -119,6 +124,12 @@ public class Propuesta {
         this.tutor = tutor;
     }
 
+    public List<Actividad> getActividades() {
+        return null;
+    }
+    public void setActividades(List<Actividad> actividades) {
+        this.actividades = actividades;
+    }
     @Override
     public String toString() {
         return "Propuesta{" + "titulo=" + titulo + ", descripcion=" + descripcion + ", areaDeInteres=" + areaDeInteres + ", obgetivo=" + objetivo + ", comentarios=" + comentarios + ", aceptados=" + aceptados + ", creador=" + creador + ", alumno=" + alumno + ", profesor=" + profesor + ", tutor=" + tutor + '}';

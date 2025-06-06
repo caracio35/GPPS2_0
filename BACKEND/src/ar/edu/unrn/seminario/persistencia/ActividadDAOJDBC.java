@@ -1,0 +1,132 @@
+package ar.edu.unrn.seminario.persistencia;
+
+import ar.edu.unrn.seminario.modelo.Actividad;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ActividadDAOJDBC implements ActividadDAO{
+    public void create(Actividad actividad, String nombreDePropuesta) {
+        java.sql.Connection conn = null;
+        java.sql.PreparedStatement statement = null;
+        java.sql.ResultSet rs = null;
+
+        try {
+            conn = ConnectionManager.getConnection();
+
+            // Primero obtenemos el ID de la propuesta
+            statement = conn.prepareStatement(
+                    "SELECT id FROM propuesta WHERE titulo = ?");
+            statement.setString(1, nombreDePropuesta);
+            rs = statement.executeQuery();
+
+            if (rs.next()) {
+                int propuestaId = rs.getInt("id");
+
+                // Ahora creamos la actividad
+                statement = conn.prepareStatement(
+                        "INSERT INTO actividad (nombre_actividad, horas) " +
+                                "VALUES (?, ?, ?)");
+
+                statement.setString(1, actividad.getNombre());
+                statement.setInt(2, actividad.getHoras());
+
+
+                statement.executeUpdate();
+            } else {
+                throw new RuntimeException("No se encontró la propuesta con título: " + nombreDePropuesta);
+            }
+
+        } catch (java.sql.SQLException e) {
+            System.out.println("Error al crear actividad: " + e.getMessage());
+            // TODO: Crear y lanzar excepción propia
+            e.printStackTrace();
+        } finally {
+            ConnectionManager.disconnect();
+        }
+    }
+
+    @Override
+    public void update(Actividad actividad) {
+
+    }
+
+    @Override
+    public void remove(Actividad actividad) {
+
+    }
+
+    public Actividad find(int id) {
+            Actividad actividad = null;
+            java.sql.Connection conn = null;
+            java.sql.PreparedStatement statement = null;
+            java.sql.ResultSet rs = null;
+
+            try {
+                conn = ConnectionManager.getConnection();
+                statement = conn.prepareStatement(
+                        "SELECT id, nombre_actividad, horas, propuesta_id " +
+                                "FROM actividad " +
+                                "WHERE id = ?");
+
+                statement.setInt(1, id);
+                rs = statement.executeQuery();
+
+                if (rs.next()) {
+                    actividad = new Actividad(
+                            rs.getString("nombre_actividad"),
+                            rs.getInt("horas")
+                    );
+                }
+
+            } catch (java.sql.SQLException e) {
+                System.out.println("Error al buscar actividad: " + e.getMessage());
+                // TODO: Crear y lanzar excepción propia
+                e.printStackTrace();
+            } finally {
+                ConnectionManager.disconnect();
+            }
+
+            return actividad;
+        }
+
+    @Override
+    public List<Actividad> findAllPorPropuesta(String nombrePropuesta) {
+        List<Actividad> actividades = new ArrayList<>();
+        java.sql.Connection conn = null;
+        java.sql.PreparedStatement statement = null;
+        java.sql.ResultSet rs = null;
+
+        try {
+            conn = ConnectionManager.getConnection();
+            statement = conn.prepareStatement(
+                    "SELECT a.id, a.nombre_actividad, a.horas, a.propuesta_id " +
+                            "FROM actividad a " +
+                            "INNER JOIN propuesta p ON a.propuesta_id = p.id " +
+                            "WHERE p.titulo = ?");
+
+            statement.setString(1, nombrePropuesta);
+            rs = statement.executeQuery();
+
+            while (rs.next()) {
+                Actividad actividad = new Actividad(
+                        rs.getString("nombre_actividad"),
+                        rs.getInt("horas")
+                );
+                actividades.add(actividad);
+            }
+
+        } catch (java.sql.SQLException e) {
+            System.out.println("Error al buscar actividades por propuesta: " + e.getMessage());
+            // TODO: Crear y lanzar excepción propia
+            e.printStackTrace();
+        } finally {
+            ConnectionManager.disconnect();
+        }
+
+        return actividades;
+    }
+}
+
+
+
