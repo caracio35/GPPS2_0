@@ -40,13 +40,12 @@ public class VentanaPrincipal extends JFrame {
 		String nombreRol = rolDto.getNombre().toLowerCase();
 
 		inicializarMenuPorRol(menuBar, nombreRol, api, usuario);
-		if (!nombreRol.equals("institución")) {
-			inicializarMenusComunes(menuBar, api);
-		}
+		
 		mostrarMensajeBienvenida(usuario);
 	}
 
 	private void inicializarMenuPorRol(JMenuBar menuBar, String rol, IApi api, UsuarioDTO usuario) {
+		
 		if (rol.equals("institución")) {
 			menuBar.add(crearBotonMenu("Crear Propuesta", () -> {
 				CargarPropuesta crear = new CargarPropuesta(this, api, usuario);
@@ -69,32 +68,23 @@ public class VentanaPrincipal extends JFrame {
 			menuBar.add(crearBotonMenu("Evaluar Alumno", () -> {}));
 		} else if (rol.equals("profesor")) {
 			menuBar.add(crearBotonMenu("Asignar Propuesta", () -> {}));
-		} else if (rol.equals("directorcarrera") || rol.equals("director de carrera")) {
-			menuBar.add(crearBotonMenu("Validar Propuestas", () -> {}));
-			menuBar.add(crearBotonMenu("Ver Informes Finales", () -> {}));
+			
+		} else if (rol.equals("director de carrera")) {
+			menuBar.add(crearBotonMenu("Asignar Tutor/Profesor", () -> {
+				new AsignarTutor(api).setVisible(true);
+			}));
+			menuBar.add(crearBotonMenu("Crear Usuario", () -> {
+				
+			}));
+			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
+				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);
+				ventanaListado.setVisible(true);
+			}));
+			
 		}
 	}
 
-	private void inicializarMenusComunes(JMenuBar menuBar, IApi api) {
-		JMenu usuarioMenu = new JMenu("Usuarios");
-
-		JMenuItem altaUsuario = new JMenuItem("Alta/Modificación");
-		JMenuItem listado = new JMenuItem("Listado");
-		listado.addActionListener(e -> {
-			ListadoUsuario listadoUsuario = new ListadoUsuario(api);
-			listadoUsuario.setVisible(true);
-		});
-
-		usuarioMenu.add(altaUsuario);
-		usuarioMenu.add(listado);
-		menuBar.add(usuarioMenu);
-
-		JMenu configuracionMenu = new JMenu("Configuración");
-		JMenuItem salir = new JMenuItem("Salir");
-		salir.addActionListener(e -> System.exit(0));
-		configuracionMenu.add(salir);
-		menuBar.add(configuracionMenu);
-	}
+	
 
 	private void mostrarMensajeBienvenida(UsuarioDTO usuario) {
 		String nombre = "(usuario)";
