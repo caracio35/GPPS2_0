@@ -27,6 +27,8 @@ public class AltaUsuario extends JFrame {
 	private JComboBox rolComboBox;
 
 	private List<RolDTO> roles = new ArrayList<>();
+	private JTextField textField;
+	private JTextField textField_1;
 
 	/**
 	 * Create the frame.
@@ -38,7 +40,7 @@ public class AltaUsuario extends JFrame {
 
 		setTitle("Alta Usuario");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 450, 336);
 
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -50,7 +52,7 @@ public class AltaUsuario extends JFrame {
 		contentPane.add(usuarioLabel);
 
 		JLabel contrasenaLabel = new JLabel("Contrase\u00F1a:");
-		contrasenaLabel.setBounds(43, 56, 93, 16);
+		contrasenaLabel.setBounds(43, 47, 93, 16);
 		contentPane.add(contrasenaLabel);
 
 		usuarioTextField = new JTextField();
@@ -59,7 +61,7 @@ public class AltaUsuario extends JFrame {
 		usuarioTextField.setColumns(10);
 
 		contrasenaTextField = new JTextField();
-		contrasenaTextField.setBounds(148, 53, 160, 22);
+		contrasenaTextField.setBounds(148, 45, 160, 22);
 		contentPane.add(contrasenaTextField);
 		contrasenaTextField.setColumns(10);
 
@@ -77,7 +79,7 @@ public class AltaUsuario extends JFrame {
 */
 			}
 		});
-		aceptarButton.setBounds(218, 215, 97, 25);
+		aceptarButton.setBounds(220, 264, 97, 25);
 		contentPane.add(aceptarButton);
 
 		JButton cancelarButton = new JButton("Cancelar");
@@ -87,34 +89,52 @@ public class AltaUsuario extends JFrame {
 				dispose();
 			}
 		});
-		cancelarButton.setBounds(323, 215, 97, 25);
+		cancelarButton.setBounds(329, 264, 97, 25);
 		contentPane.add(cancelarButton);
 
 		JLabel nombreLabel = new JLabel("Nombre:");
-		nombreLabel.setBounds(43, 88, 56, 16);
+		nombreLabel.setBounds(43, 84, 56, 16);
 		contentPane.add(nombreLabel);
 
 		JLabel emailLabel = new JLabel("Email:");
-		emailLabel.setBounds(43, 125, 56, 16);
+		emailLabel.setBounds(43, 156, 56, 16);
 		contentPane.add(emailLabel);
 
 		JLabel rolLabel = new JLabel("Rol:");
-		rolLabel.setBounds(43, 154, 56, 16);
+		rolLabel.setBounds(43, 235, 56, 16);
 		contentPane.add(rolLabel);
 
 		nombreTextField = new JTextField();
-		nombreTextField.setBounds(148, 85, 160, 22);
+		nombreTextField.setBounds(148, 82, 160, 22);
 		contentPane.add(nombreTextField);
 		nombreTextField.setColumns(10);
 
 		emailTextField = new JTextField();
-		emailTextField.setBounds(148, 122, 160, 22);
+		emailTextField.setBounds(148, 154, 160, 22);
 		contentPane.add(emailTextField);
 		emailTextField.setColumns(10);
 
 		rolComboBox = new JComboBox();
-		rolComboBox.setBounds(148, 151, 160, 22);
+		rolComboBox.setBounds(148, 232, 160, 22);
 		contentPane.add(rolComboBox);
+		
+		JLabel lblApellido = new JLabel("Apellido:");
+		lblApellido.setBounds(43, 114, 56, 16);
+		contentPane.add(lblApellido);
+		
+		textField = new JTextField();
+		textField.setColumns(10);
+		textField.setBounds(148, 117, 160, 22);
+		contentPane.add(textField);
+		
+		JLabel lblDni = new JLabel("Dni:");
+		lblDni.setBounds(43, 193, 56, 16);
+		contentPane.add(lblDni);
+		
+		textField_1 = new JTextField();
+		textField_1.setColumns(10);
+		textField_1.setBounds(148, 191, 160, 22);
+		contentPane.add(textField_1);
 
 		for (RolDTO rol : this.roles) {
 			rolComboBox.addItem(rol.getNombre());

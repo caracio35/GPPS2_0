@@ -52,28 +52,29 @@ public class VentanaPrincipal extends JFrame {
 				crear.setVisible(true);
 			}));
 			menuBar.add(crearBotonMenu("Ver Estado de Propuestas", () -> {
-				// VentanaVerPropuesta ver = new VentanaVerPropuesta(api, usuario);
-				// ver.setVisible(true);
+				//ver propuestas suvidas por alumnos
 			}));
 		} else if (rol.equals("alumno")) {
 			menuBar.add(crearBotonMenu("Ver Propuestas", () -> {
-				// VentanaVerPropuesta ver = new VentanaVerPropuesta(api, usuario);
-				// ver.setVisible(true);
+				VerPropuestas ventanaVerPropuesta = new VerPropuestas(this);
+				ventanaVerPropuesta.setVisible(true);
 			}));
-			menuBar.add(crearBotonMenu("Subir Informe Final", () ->
+			menuBar.add(crearBotonMenu("", () ->
 					JOptionPane.showMessageDialog(this, "Aquí iría la lógica para subir informe final.")
 			));
 		} else if (rol.equals("tutor")) {
-			menuBar.add(crearBotonMenu("Revisar Propuestas", () -> {}));
+			menuBar.add(crearBotonMenu("", () -> {}));
 			menuBar.add(crearBotonMenu("Evaluar Alumno", () -> {}));
 		} else if (rol.equals("profesor")) {
-			menuBar.add(crearBotonMenu("Asignar Propuesta", () -> {}));
+			menuBar.add(crearBotonMenu("evaluar ", () -> {}));
 			
 		} else if (rol.equals("director de carrera")) {
 			menuBar.add(crearBotonMenu("Asignar Tutor/Profesor", () -> {
 				new AsignarTutor(api).setVisible(true);
 			}));
 			menuBar.add(crearBotonMenu("Crear Usuario", () -> {
+				AltaUsuario ventanaAltaUsuario = new AltaUsuario(api);
+				ventanaAltaUsuario.setVisible(true);
 				
 			}));
 			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
