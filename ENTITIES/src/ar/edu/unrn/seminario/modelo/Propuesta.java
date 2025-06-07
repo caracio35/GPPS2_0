@@ -21,7 +21,7 @@ public class Propuesta {
         this.descripcion = descripcion;
         this.areaDeInteres = areaDeInteres;
         this.objetivo = objetivo;
-        this.comentarios = comentarios;
+        this.comentarios = null;
         this.aceptados = aceptados;
         this.creador = creador;
         this.alumno = null;
@@ -125,11 +125,9 @@ public class Propuesta {
     }
 
     public List<Actividad> getActividades() {
-        return null;
+    	return actividades;
     }
-    public void setActividades(List<Actividad> actividades) {
-        this.actividades = actividades;
-    }
+   
     @Override
     public String toString() {
         return "Propuesta{" + "titulo=" + titulo + ", descripcion=" + descripcion + ", areaDeInteres=" + areaDeInteres + ", obgetivo=" + objetivo + ", comentarios=" + comentarios + ", aceptados=" + aceptados + ", creador=" + creador + ", alumno=" + alumno + ", profesor=" + profesor + ", tutor=" + tutor + '}';

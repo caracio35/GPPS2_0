@@ -4,6 +4,7 @@ package ar.edu.unrn.seminario.persistencia;
 import java.util.List;
 
 import ar.edu.unrn.seminario.modelo.Propuesta;
+import ar.edu.unrn.seminario.modelo.Usuario;
 
 public interface PropuestaDAO {
 
@@ -15,7 +16,11 @@ public interface PropuestaDAO {
     
         Propuesta find(Integer codigo);
     
-        List<Propuesta> findAll();
-    
+ 
+        List<Propuesta> findSoloConCreador();
+
+        List<Propuesta> findAllCompleto();
+
+        boolean asignarAlumnoAPropuesta(Usuario usuario, Propuesta propuesta);
     }
     

@@ -3,12 +3,30 @@ package ar.edu.unrn.seminario.gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+import ar.edu.unrn.seminario.api.IApi;
+import ar.edu.unrn.seminario.dto.ActividadDTO;
+import ar.edu.unrn.seminario.dto.PropuestaDTO;
+import ar.edu.unrn.seminario.dto.UsuarioDTO;
+
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VerPropuestas extends JDialog {
 
-    public VerPropuestas(JFrame parent) {
+    private List<PropuestaDTO> propuestas;
+    private IApi api;
+    private UsuarioDTO usuario;
+
+    public VerPropuestas(JFrame parent, IApi api, UsuarioDTO usuario) {
         super(parent, "Ver Propuestas (Demo)", true);
+        this.api = api;
+        this.usuario = usuario;
 
         JPanel panel = new JPanel() {
             @Override
@@ -42,8 +60,25 @@ public class VerPropuestas extends JDialog {
                 return false;
             }
         };
-        tableModel.addRow(new Object[] {"Ejemplo 1", "Tecnología", "Desarrollo de App"});
-        tableModel.addRow(new Object[] {"Ejemplo 2", "Salud", "Campaña de prevención"});
+
+        propuestas = new ArrayList<>();
+        List<PropuestaDTO> todas = api.buscarPropuestasPorCreador();
+
+        for (PropuestaDTO p : todas) {
+            boolean esAprobada = p.getAceptados() == 1;
+            boolean fueSubidaPorAlumno = p.getCreador() != null && p.getCreador().getRol() == 1;
+            if (usuario.getRol() == 4) {
+                if (esAprobada && fueSubidaPorAlumno) {
+                    tableModel.addRow(new Object[]{p.getTitulo(), p.getAreaDeInteres(), p.getDescripcion()});
+                    propuestas.add(p);
+                }
+            } else {
+                if (esAprobada) {
+                    tableModel.addRow(new Object[]{p.getTitulo(), p.getAreaDeInteres(), p.getDescripcion()});
+                    propuestas.add(p);
+                }
+            }
+        }
 
         JTable propuestasTable = new JTable(tableModel);
         propuestasTable.setRowHeight(25);
@@ -61,15 +96,41 @@ public class VerPropuestas extends JDialog {
         verDetalleBtn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
         verDetalleBtn.setEnabled(false);
 
+        JButton inscribirmeBtn = new JButton("Inscribirme");
+        inscribirmeBtn.setBackground(new Color(76, 175, 80));
+        inscribirmeBtn.setForeground(Color.WHITE);
+        inscribirmeBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        inscribirmeBtn.setFocusPainted(false);
+        inscribirmeBtn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        inscribirmeBtn.setEnabled(false);
+
         verDetalleBtn.addActionListener(e -> mostrarDetalle(propuestasTable.getSelectedRow()));
 
+        inscribirmeBtn.addActionListener(e -> {
+            int selectedRow = propuestasTable.getSelectedRow();
+            if (selectedRow != -1) {
+                PropuestaDTO seleccionada = propuestas.get(selectedRow);
+                if (usuario != null) {
+                    boolean exito = api.generarIncripcionDeAlumnoApropuesta( usuario , seleccionada);
+                    if (exito) {
+                        JOptionPane.showMessageDialog(this, "Inscripción realizada correctamente.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Ya estás inscrito en una propuesta.");
+                    }
+                }
+            }
+        });
+
         propuestasTable.getSelectionModel().addListSelectionListener(e -> {
-            verDetalleBtn.setEnabled(propuestasTable.getSelectedRow() != -1);
+            boolean habilitado = propuestasTable.getSelectedRow() != -1;
+            verDetalleBtn.setEnabled(habilitado);
+            inscribirmeBtn.setEnabled(habilitado);
         });
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.add(verDetalleBtn);
+        buttonPanel.add(inscribirmeBtn);
 
         JButton cerrarBtn = new JButton("Cerrar");
         cerrarBtn.setBackground(new Color(244, 67, 54));
@@ -94,17 +155,9 @@ public class VerPropuestas extends JDialog {
     }
 
     private void mostrarDetalle(int selectedRow) {
-        if (selectedRow == -1) return;
+        if (selectedRow == -1 || selectedRow >= propuestas.size()) return;
 
-        String titulo = "Ejemplo 1";
-        String area = "Tecnología";
-        String descripcion = "Desarrollo de App";
-
-        if (selectedRow == 1) {
-            titulo = "Ejemplo 2";
-            area = "Salud";
-            descripcion = "Campaña de prevención";
-        }
+        PropuestaDTO propuesta = propuestas.get(selectedRow);
 
         JDialog detalle = new JDialog(this, "Detalle de Propuesta", true);
         detalle.setLayout(new BorderLayout(10, 10));
@@ -112,13 +165,12 @@ public class VerPropuestas extends JDialog {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        panel.add(crearCampo("Título:", titulo));
+        panel.add(crearCampo("Título:", propuesta.getTitulo()));
         panel.add(Box.createVerticalStrut(10));
-        panel.add(crearCampo("Área de interés:", area));
+        panel.add(crearCampo("Área de interés:", propuesta.getAreaDeInteres()));
         panel.add(Box.createVerticalStrut(10));
-        panel.add(crearAreaTexto("Descripción:", descripcion));
+        panel.add(crearAreaTexto("Descripción:", propuesta.getDescripcion()));
 
-        // Tabla de actividades
         panel.add(Box.createVerticalStrut(15));
         JLabel actividadesLabel = new JLabel("Actividades y horas:");
         actividadesLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -131,9 +183,12 @@ public class VerPropuestas extends JDialog {
                 return false;
             }
         };
-        tableModel.addRow(new Object[] {"Relevamiento", 10});
-        tableModel.addRow(new Object[] {"Desarrollo", 20});
-        tableModel.addRow(new Object[] {"Testing", 15});
+
+        int totalHoras = 0;
+        for (ActividadDTO a : propuesta.getActividades()) {
+            tableModel.addRow(new Object[]{a.getNombre(), a.getHoras()});
+            totalHoras += a.getHoras();
+        }
 
         JTable actividadesTable = new JTable(tableModel);
         actividadesTable.setRowHeight(25);
@@ -141,8 +196,7 @@ public class VerPropuestas extends JDialog {
         actividadesScroll.setPreferredSize(new Dimension(400, 100));
         panel.add(actividadesScroll);
 
-        // Total de horas
-        JLabel totalHorasLabel = new JLabel("Total de horas: 45");
+        JLabel totalHorasLabel = new JLabel("Total de horas: " + totalHoras);
         totalHorasLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         totalHorasLabel.setForeground(new Color(33, 150, 243));
         panel.add(Box.createVerticalStrut(10));
@@ -193,12 +247,4 @@ public class VerPropuestas extends JDialog {
         panel.add(scroll);
         return panel;
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            VerPropuestas dialog = new VerPropuestas(null);
-            dialog.setVisible(true);
-        });
-    }
 }
-

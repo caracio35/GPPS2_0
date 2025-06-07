@@ -8,7 +8,7 @@ public class PropuestaDTO {
     private String areaDeInteres;
     private String objetivo;
     private String comentarios;
-    private int aceptados;
+    private int aceptados;  //-1 Rechazada , 1 aprobada , 0 desaprobada
     private UsuarioDTO creador;
     private UsuarioDTO alumno;
     private UsuarioDTO profesor;
@@ -84,6 +84,9 @@ public class PropuestaDTO {
 
     public UsuarioDTO getTutor() {
         return tutor;
+    }
+    public List<ActividadDTO> getActividades(){
+    	return actividades ;
     }
 
     @Override

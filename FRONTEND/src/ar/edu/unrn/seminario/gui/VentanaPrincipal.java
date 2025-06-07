@@ -22,8 +22,11 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
 public class VentanaPrincipal extends JFrame {
 
 	private JPanel contentPane;
+	private UsuarioDTO usuario;
 
 	public VentanaPrincipal(IApi api, UsuarioDTO usuario) {
+		
+		this.usuario = usuario ; 
 		setTitle("Ventana Principal - " + usuario.getUsername());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 300);
@@ -51,16 +54,20 @@ public class VentanaPrincipal extends JFrame {
 				CargarPropuesta crear = new CargarPropuesta(this, api, usuario);
 				crear.setVisible(true);
 			}));
-			menuBar.add(crearBotonMenu("Ver Estado de Propuestas", () -> {
+			menuBar.add(crearBotonMenu("Ver Propuestas ", () -> {
+				VerPropuestas ventanaVerPropuesta = new VerPropuestas(this , api , usuario);
+				ventanaVerPropuesta.setVisible(true);
 				//ver propuestas suvidas por alumnos
 			}));
 		} else if (rol.equals("alumno")) {
 			menuBar.add(crearBotonMenu("Ver Propuestas", () -> {
-				VerPropuestas ventanaVerPropuesta = new VerPropuestas(this);
+				VerPropuestas ventanaVerPropuesta = new VerPropuestas(this , api , usuario);
 				ventanaVerPropuesta.setVisible(true);
 			}));
-			menuBar.add(crearBotonMenu("", () ->
-					JOptionPane.showMessageDialog(this, "Aquí iría la lógica para subir informe final.")
+			menuBar.add(crearBotonMenu("Crear Propuesta", () -> {
+				CargarPropuesta crear = new CargarPropuesta(this, api, usuario);
+				crear.setVisible(true);
+			}
 			));
 		} else if (rol.equals("tutor")) {
 			menuBar.add(crearBotonMenu("", () -> {}));
@@ -74,8 +81,7 @@ public class VentanaPrincipal extends JFrame {
 			}));
 			menuBar.add(crearBotonMenu("Crear Usuario", () -> {
 				AltaUsuario ventanaAltaUsuario = new AltaUsuario(api);
-				ventanaAltaUsuario.setVisible(true);
-				
+				ventanaAltaUsuario.setVisible(true);	
 			}));
 			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
 				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);

@@ -2,6 +2,7 @@ package ar.edu.unrn.seminario.api;
 
 import java.util.List;
 
+import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
 
@@ -30,4 +31,10 @@ public interface IApi {
 	void activarUsuario(String username); // recuperar el objeto Usuario, implementar el comportamiento de estado.
 
 	void desactivarUsuario(String username); // recuperar el objeto Usuario, implementar el comportamiento de estado.
+	
+	void crearPropuesta(PropuestaDTO propuesta);
+	
+	List<PropuestaDTO> buscarPropuestasPorCreador();
+
+	boolean generarIncripcionDeAlumnoApropuesta(UsuarioDTO usuario, PropuestaDTO propuesta);
 }

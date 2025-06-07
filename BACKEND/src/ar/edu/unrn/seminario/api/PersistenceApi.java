@@ -4,14 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.unrn.seminario.persistencia.PersonaDAOJDBC;
+import ar.edu.unrn.seminario.persistencia.PropuestaDAO;
+import ar.edu.unrn.seminario.persistencia.PropuestaDAOJDBC;
 import  ar.edu.unrn.seminario.persistencia.RolDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.RolDao;
 import ar.edu.unrn.seminario.persistencia.UsuarioDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.UsuarioDao;
+import ar.edu.unrn.seminario.dto.ActividadDTO;
 import ar.edu.unrn.seminario.dto.PersonaDTO;
+import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.modelo.Actividad;
 import ar.edu.unrn.seminario.modelo.Persona;
+import ar.edu.unrn.seminario.modelo.Propuesta;
 import ar.edu.unrn.seminario.modelo.Rol;
 import ar.edu.unrn.seminario.modelo.Usuario;
 
@@ -19,11 +25,13 @@ public class PersistenceApi implements IApi {
 
 	private RolDao rolDao;
 	private UsuarioDao usuarioDao;
+	private PropuestaDAO propuestaDao;
+	 
 
 	public PersistenceApi() {
 		rolDao = new RolDAOJDBC();
 		usuarioDao = new UsuarioDAOJDBC();
-		
+		propuestaDao = new PropuestaDAOJDBC();
 	}
 
 	@Override
@@ -140,4 +148,149 @@ public class PersistenceApi implements IApi {
 
 	}
 
+	@Override
+	public void crearPropuesta(PropuestaDTO propuesta) {
+		
+		 // Convertir el creador (único usuario que viene cargado)
+	    Usuario creador = convertir(propuesta.getCreador());
+
+	    // Convertir actividades
+	    List<Actividad> actividades = new ArrayList<>();
+	    for (ActividadDTO actDTO : propuesta.getActividades()) {
+	        actividades.add(new Actividad(
+	            actDTO.getNombre(),
+	            actDTO.getHoras()
+	        ));
+	    }
+
+	    // Crear propuesta con alumno, profesor y tutor en null
+	    Propuesta propuest = new Propuesta(
+	       propuesta.getTitulo(),
+	        propuesta.getDescripcion(),
+	        propuesta.getAreaDeInteres(),
+	        propuesta.getObjetivo(),
+	        propuesta.getComentarios(),
+	        propuesta.getAceptados(),
+	        creador,
+	        actividades
+	    );
+
+	    // Persistir la propuesta
+	    propuestaDao.create(propuest);
+		
+	}
+	
+
+	@Override
+	public List<PropuestaDTO> buscarPropuestasPorCreador() {
+		 List<Propuesta> propuestas = propuestaDao.findSoloConCreador();
+		    List<PropuestaDTO> dtos = new ArrayList<>();
+
+		    for (Propuesta p : propuestas) {
+		        PropuestaDTO dto = new PropuestaDTO(
+		            p.getTitulo(),
+		            p.getDescripcion(),
+		            p.getAreaDeInteres(),
+		            p.getObjetivo(),
+		            p.getComentarios(),
+		            p.getAceptados(),
+		            usuarioADTO(p.getCreador()),
+		            listaActividadesDTO(p.getActividades())
+		        );
+		        dtos.add(dto);
+		    }
+
+		    return dtos;
+		}
+	
+	@Override
+	public boolean generarIncripcionDeAlumnoApropuesta(UsuarioDTO usuario, PropuestaDTO propuesta) {
+		
+		Usuario usu = convertir(usuario);
+		Usuario creador = convertir(propuesta.getCreador());
+		List<ActividadDTO> actividadesDto = propuesta.getActividades();
+		List<Actividad> actividad = convertirActividades(actividadesDto);
+		
+		  // Crear entidad Propuesta con constructor que incluye solo los datos necesarios
+	    Propuesta propues = new Propuesta(
+	        propuesta.getTitulo(),
+	        propuesta.getDescripcion(),
+	        propuesta.getAreaDeInteres(),
+	        propuesta.getObjetivo(),
+	        propuesta.getComentarios(),
+	        propuesta.getAceptados(),
+	        creador,
+	        actividad
+	    );
+
+		
+	 // Delegar al DAO la actualización
+	    return propuestaDao.asignarAlumnoAPropuesta(usu, propues);
+	}
+		
+		
+	
+	//////////////////////////////////////////Metodos privados que se pueden usuar /////////////////////////////////////
+	//metodo para crear para pasar de persona a personaDTO
+	private PersonaDTO personaADTO(Persona persona) {
+	    if (persona == null) return null;
+	    return new PersonaDTO(persona.getNombre(), persona.getApellido(), persona.getDni());
+	}
+	
+	//metodo privado para pasar usuarios a usuariosDTO 
+	private UsuarioDTO usuarioADTO(Usuario usuario) {
+	    if (usuario == null) return null;
+	    return new UsuarioDTO(
+	        usuario.getUsuario(),
+	        usuario.getContrasena(), 
+	        personaADTO(usuario.getPersona()),
+	        usuario.getEmail(),
+	        usuario.getRol().getCodigo(),
+	        usuario.isActivo(),
+	        usuario.isActivo() ? "Activo" : "Inactivo"
+	    );
+	}
+	
+	//metoddo para pasar actividades a tipo actividaddedDTO
+	private ActividadDTO actividadADTO(Actividad actividad) {
+	    if (actividad == null) return null;
+	    return new ActividadDTO(actividad.getNombre(), actividad.getHoras());
+	}
+	
+	//metodo para pasar una lista de activiodades a una listas de actividadesDTO
+	private List<ActividadDTO> listaActividadesDTO(List<Actividad> actividades) {
+	    List<ActividadDTO> dtos = new ArrayList<>();
+	    for (Actividad a : actividades) {
+	        dtos.add(actividadADTO(a));
+	    }
+	    return dtos;
+	}
+	
+	//convierte un ususario a usuarioDTO
+	private Usuario convertir(UsuarioDTO dto) {
+	    Persona persona = new Persona(
+	        dto.getPersona().getNombre(),
+	        dto.getPersona().getApellido(),
+	        dto.getPersona().getDni()
+	    );
+	    Rol rol = rolDao.find(dto.getRol());
+	    return new Usuario(
+	        dto.getUsername(),
+	        dto.getPassword(),
+	        dto.getEmail(),
+	        true,
+	        rol,
+	        persona
+	    );
+	}
+	
+	//convierte a una lista de actividades dto en una lista de actividades entiti 
+	private List<Actividad> convertirActividades(List<ActividadDTO> actividadDTOs) {
+	    List<Actividad> actividades = new ArrayList<>();
+	    for (ActividadDTO actDto : actividadDTOs) {
+	        actividades.add(new Actividad(actDto.getNombre(), actDto.getHoras()));
+	    }
+	    return actividades;
+	}
+	
 }

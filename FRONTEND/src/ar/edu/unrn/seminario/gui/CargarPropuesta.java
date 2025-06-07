@@ -2,18 +2,22 @@ package ar.edu.unrn.seminario.gui;
 
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import ar.edu.unrn.seminario.api.IApi;
+import ar.edu.unrn.seminario.dto.ActividadDTO;
+import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CargarPropuesta extends JDialog {
 
 	private IApi api;
 	private JPanel contentPanel;
+	private UsuarioDTO usuario;
 
 	public CargarPropuesta() {
 		initialize();
@@ -22,6 +26,7 @@ public class CargarPropuesta extends JDialog {
 	public CargarPropuesta(JFrame parent, IApi api, UsuarioDTO usuario) {
 		super(parent, "Cargar Propuesta", true);
 		this.api = api;
+		this.usuario = usuario;
 		initialize();
 	}
 
@@ -99,19 +104,21 @@ public class CargarPropuesta extends JDialog {
 
 		JTable tabla = new JTable(modeloTabla);
 		tabla.setRowHeight(25);
-		
-		
-
 		JScrollPane scrollTabla = new JScrollPane(tabla);
 		scrollTabla.setBounds(50, 465, 600, 128);
 		contentPanel.add(scrollTabla);
 
+		JButton btnAgregarActividad = new JButton("Agregar Actividad");
+		btnAgregarActividad.setBounds(50, 600, 160, 25);
+		btnAgregarActividad.addActionListener(e -> modeloTabla.addRow(new Object[] { "", 0 }));
+		contentPanel.add(btnAgregarActividad);
+
 		JLabel lblTotal = new JLabel("Total de horas: 0");
 		lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblTotal.setForeground(new Color(33, 150, 243));
-		lblTotal.setBounds(50, 603, 200, 25);
+		lblTotal.setBounds(230, 600, 200, 25);
 		contentPanel.add(lblTotal);
-		
+
 		modeloTabla.addTableModelListener(e -> {
 		    int totalHoras = 0;
 		    for (int i = 0; i < modeloTabla.getRowCount(); i++) {
@@ -122,7 +129,7 @@ public class CargarPropuesta extends JDialog {
 		            try {
 		                totalHoras += Integer.parseInt(valor.toString());
 		            } catch (Exception ex) {
-		                // Ignorar si no es número válido
+		                // Ignorar
 		            }
 		        }
 		    }
@@ -136,12 +143,58 @@ public class CargarPropuesta extends JDialog {
 		btnCerrar.setBounds(550, 682, 100, 30);
 		btnCerrar.addActionListener(e -> dispose());
 		contentPanel.add(btnCerrar);
-		
+
 		JButton btnNewCrearPropuesta = new JButton("Cargar");
 		btnNewCrearPropuesta.setBackground(new Color(128, 255, 0));
 		btnNewCrearPropuesta.setForeground(new Color(0, 0, 0));
 		btnNewCrearPropuesta.setBounds(422, 682, 100, 30);
 		contentPanel.add(btnNewCrearPropuesta);
+
+		btnNewCrearPropuesta.addActionListener(e -> {
+			String titulo = txtTitulo.getText().trim();
+			String area = txtArea.getText().trim();
+			String objetivo = txtObjetivo.getText().trim();
+			String descripcion = txtDescripcion.getText().trim();
+
+			List<ActividadDTO> actividades = new ArrayList<>();
+			for (int i = 0; i < modeloTabla.getRowCount(); i++) {
+				String nombre = modeloTabla.getValueAt(i, 0).toString();
+				int horas;
+				try {
+					horas = Integer.parseInt(modeloTabla.getValueAt(i, 1).toString());
+				} catch (NumberFormatException ex) {
+					horas = 0;
+				}
+				if (!nombre.isBlank() && horas > 0) {
+					actividades.add(new ActividadDTO(nombre, horas));
+				}
+			}
+
+			int totalHoras = actividades.stream().mapToInt(ActividadDTO::getHoras).sum();
+			if (totalHoras < 150 || totalHoras > 200) {
+				JOptionPane.showMessageDialog(this,
+					"El total de horas debe ser entre 150 y 200.",
+					"Error de validación",
+					JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+			PropuestaDTO propuesta = new PropuestaDTO(
+				titulo,
+				descripcion,
+				area,
+				objetivo,
+				"",
+				-1,
+				usuario,
+				actividades
+			);
+
+			api.crearPropuesta(propuesta);
+			JOptionPane.showMessageDialog(this, "Propuesta creada correctamente.");
+			dispose();
+		});
 	}
 }
+
 

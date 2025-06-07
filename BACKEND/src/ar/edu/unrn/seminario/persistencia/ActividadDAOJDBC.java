@@ -2,14 +2,18 @@ package ar.edu.unrn.seminario.persistencia;
 
 import ar.edu.unrn.seminario.modelo.Actividad;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ActividadDAOJDBC implements ActividadDAO{
     public void create(Actividad actividad, String nombreDePropuesta) {
-        java.sql.Connection conn = null;
-        java.sql.PreparedStatement statement = null;
-        java.sql.ResultSet rs = null;
+        Connection conn = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
 
         try {
             conn = ConnectionManager.getConnection();
@@ -37,7 +41,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
                 throw new RuntimeException("No se encontró la propuesta con título: " + nombreDePropuesta);
             }
 
-        } catch (java.sql.SQLException e) {
+        } catch (SQLException e) {
             System.out.println("Error al crear actividad: " + e.getMessage());
             // TODO: Crear y lanzar excepción propia
             e.printStackTrace();
@@ -58,9 +62,9 @@ public class ActividadDAOJDBC implements ActividadDAO{
 
     public Actividad find(int id) {
             Actividad actividad = null;
-            java.sql.Connection conn = null;
-            java.sql.PreparedStatement statement = null;
-            java.sql.ResultSet rs = null;
+            Connection conn = null;
+            PreparedStatement statement = null;
+            ResultSet rs = null;
 
             try {
                 conn = ConnectionManager.getConnection();
@@ -79,7 +83,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
                     );
                 }
 
-            } catch (java.sql.SQLException e) {
+            } catch (SQLException e) {
                 System.out.println("Error al buscar actividad: " + e.getMessage());
                 // TODO: Crear y lanzar excepción propia
                 e.printStackTrace();
@@ -93,9 +97,9 @@ public class ActividadDAOJDBC implements ActividadDAO{
     @Override
     public List<Actividad> findAllPorPropuesta(String nombrePropuesta) {
         List<Actividad> actividades = new ArrayList<>();
-        java.sql.Connection conn = null;
-        java.sql.PreparedStatement statement = null;
-        java.sql.ResultSet rs = null;
+        Connection conn = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
 
         try {
             conn = ConnectionManager.getConnection();
@@ -116,7 +120,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
                 actividades.add(actividad);
             }
 
-        } catch (java.sql.SQLException e) {
+        } catch (SQLException e) {
             System.out.println("Error al buscar actividades por propuesta: " + e.getMessage());
             // TODO: Crear y lanzar excepción propia
             e.printStackTrace();
