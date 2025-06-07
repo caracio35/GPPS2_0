@@ -62,7 +62,7 @@ public class VerPropuestas extends JDialog {
         };
 
         propuestas = new ArrayList<>();
-        List<PropuestaDTO> todas = api.buscarPropuestasPorCreador();
+        List<PropuestaDTO> todas = api.buscarPropuestas();
 
         for (PropuestaDTO p : todas) {
             boolean esAprobada = p.getAceptados() == 1;

@@ -182,7 +182,7 @@ public class PersistenceApi implements IApi {
 	
 
 	@Override
-	public List<PropuestaDTO> buscarPropuestasPorCreador() {
+	public List<PropuestaDTO> buscarPropuestas() {
 		 List<Propuesta> propuestas = propuestaDao.findSoloConCreador();
 		    List<PropuestaDTO> dtos = new ArrayList<>();
 
@@ -227,6 +227,48 @@ public class PersistenceApi implements IApi {
 	 // Delegar al DAO la actualización
 	    return propuestaDao.asignarAlumnoAPropuesta(usu, propues);
 	}
+	
+	@Override
+	public List<PropuestaDTO> buscarPropuestasParaAsignarTutores() {
+	    List<Propuesta> propuestas = propuestaDao.findAllCompleto();
+	    List<PropuestaDTO> propuestasFiltradas = new ArrayList<>();
+
+	    for (Propuesta p : propuestas) {
+	        boolean esAprobada = p.getAceptados() == 1;
+	        boolean tieneAlumno = p.getAlumno() != null;
+	        boolean sinProfesor = p.getProfesor() == null;
+
+	        if (esAprobada && tieneAlumno && sinProfesor) {
+	            PropuestaDTO dto = new PropuestaDTO(
+	                p.getTitulo(),
+	                p.getDescripcion(),
+	                p.getAreaDeInteres(),
+	                p.getObjetivo(),
+	                p.getComentarios(),
+	                p.getAceptados(),
+	                usuarioADTO(p.getCreador()),   // creador
+	                usuarioADTO(p.getAlumno()),    // alumno
+	                null,                          // profesor aún no asignado
+	                null,                          // tutor aún no asignado
+	                listaActividadesDTO(p.getActividades())
+	            );
+
+	            propuestasFiltradas.add(dto);
+	        }
+	    }
+
+	    return propuestasFiltradas;
+	}
+	
+	
+	
+	@Override
+	public boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	
 		
 		
 	
@@ -292,5 +334,11 @@ public class PersistenceApi implements IApi {
 	    }
 	    return actividades;
 	}
+
+	
+
+	
+
+	
 	
 }

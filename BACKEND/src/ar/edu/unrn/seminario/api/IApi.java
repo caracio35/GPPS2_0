@@ -34,7 +34,13 @@ public interface IApi {
 	
 	void crearPropuesta(PropuestaDTO propuesta);
 	
-	List<PropuestaDTO> buscarPropuestasPorCreador();
+	List<PropuestaDTO> buscarPropuestas();
 
 	boolean generarIncripcionDeAlumnoApropuesta(UsuarioDTO usuario, PropuestaDTO propuesta);
+	
+	List<PropuestaDTO> buscarPropuestasParaAsignarTutores();
+
+	boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor);
+
+	
 }
