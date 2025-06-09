@@ -19,7 +19,6 @@ public class SeleccionarProfesorYTutor extends JDialog {
 
 	public SeleccionarProfesorYTutor(IApi api, PropuestaDTO propuesta) {
 		
-		this.todosLosUsuario = api.obtenerUsuarios();
 		
 		this.todosLosUsuario = api.obtenerUsuarios();
 

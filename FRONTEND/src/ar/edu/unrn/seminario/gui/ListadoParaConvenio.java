@@ -19,8 +19,11 @@ public class ListadoParaConvenio extends JFrame {
 	private JLabel lblTitulo;
 	private JButton btnSeleccionar;
 	private JButton btnCancelar;
+	private IApi api ;
 
-	public ListadoParaConvenio(IApi api) { 
+	public ListadoParaConvenio(IApi api) {
+		
+		this.api = api ;
 		setTitle("Listado de Convenios");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(700, 450);
@@ -53,36 +56,59 @@ public class ListadoParaConvenio extends JFrame {
 		btnSeleccionar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		btnSeleccionar.setBounds(373, 361, 131, 30);
 		getContentPane().add(btnSeleccionar);
-		
+
 		btnCancelar = new JButton("Cancelar");
-		btnCancelar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
+		btnCancelar.addActionListener(e -> dispose());
 		btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		btnCancelar.setBounds(530, 361, 131, 30);
 		getContentPane().add(btnCancelar);
 
-		// Simular carga (temporal mientras comentaste la llamada real)
-		modeloTabla.addRow(new Object[] { "Sistema de turnos médicos", "Salud" });
-		modeloTabla.addRow(new Object[] { "ChatBot educativo", "Inteligencia Artificial" });
+		// 🚀 Cargar propuestas desde la API filtrando las que estén aceptadas y completas
+		try {
+			propuestas = api.buscarPropuestasParaConvenio(); 
+			
+			for (PropuestaDTO p : propuestas) {
+				if (p.getAceptados() == 1 
+					&& p.getTutor() != null
+					&& p.getProfesor() != null
+					&& p.getAlumno() != null) {
 
-		// Acción del botón
+					modeloTabla.addRow(new Object[] {
+						p.getTitulo(),
+						p.getAreaDeInteres() 
+					});
+				}
+			}
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(this, "Error al cargar propuestas: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+
 		btnSeleccionar.addActionListener(e -> seleccionarConvenio());
 	}
 
 	private void seleccionarConvenio() {
 		int fila = tablaConvenios.getSelectedRow();
 		if (fila == -1) {
-			JOptionPane.showMessageDialog(this, "Seleccioná un convenio.");
+			JOptionPane.showMessageDialog(this, "Seleccioná una propuesta para generar el convenio.");
 			return;
 		}
 
-		String titulo = modeloTabla.getValueAt(fila, 0).toString();
-		JOptionPane.showMessageDialog(this, "Convenio seleccionado: " + titulo);
+		String tituloSeleccionado = modeloTabla.getValueAt(fila, 0).toString();
 
-		
-		dispose();
+		// Buscar la propuesta en la lista original
+		PropuestaDTO seleccionada = propuestas.stream()
+			.filter(p -> p.getTitulo().equals(tituloSeleccionado))
+			.findFirst()
+			.orElse(null);
+
+		if (seleccionada != null) {
+			VentanaCrearConvenio ventana = new VentanaCrearConvenio(api, seleccionada);
+			ventana.setVisible(true);
+			dispose(); 
+		} else {
+			JOptionPane.showMessageDialog(this, "No se encontró la propuesta seleccionada.");
+		}
 	}
 }
 

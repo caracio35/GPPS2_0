@@ -1,5 +1,7 @@
 package ar.edu.unrn.seminario.api;
 
+import java.io.File;
+import java.time.LocalDate;
 import java.util.List;
 
 import ar.edu.unrn.seminario.dto.PropuestaDTO;
@@ -42,5 +44,7 @@ public interface IApi {
 
 	boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor);
 
+	List<PropuestaDTO> buscarPropuestasParaConvenio();
 	
+	void generarYGuardarConvenio(PropuestaDTO propuesta, LocalDate fechaInicio, LocalDate fechaFin, File destino) throws Exception;
 }
