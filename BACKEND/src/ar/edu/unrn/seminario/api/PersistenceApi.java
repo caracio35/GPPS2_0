@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import ar.edu.unrn.seminario.persistencia.ConvenioDAO;
+import ar.edu.unrn.seminario.persistencia.ConvenioDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.PersonaDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.PropuestaDAO;
 import ar.edu.unrn.seminario.persistencia.PropuestaDAOJDBC;
@@ -41,6 +42,7 @@ public class PersistenceApi implements IApi {
 		rolDao = new RolDAOJDBC();
 		usuarioDao = new UsuarioDAOJDBC();
 		propuestaDao = new PropuestaDAOJDBC();
+		convenioDao = new ConvenioDAOJDBC();
 	}
 
 	@Override

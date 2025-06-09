@@ -38,10 +38,13 @@ public class ConnectionManager {
 	}
 
 	public static Connection getConnection() {
-		if (conn == null) {
-			connect();
+		try {
+			if (conn == null || conn.isClosed()) {
+				connect();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return conn;
 	}
-
-}
+	}
