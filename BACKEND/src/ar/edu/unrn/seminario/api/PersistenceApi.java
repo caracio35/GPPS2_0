@@ -335,7 +335,7 @@ public class PersistenceApi implements IApi {
 	        if (i > 3) break;
 	    }
 
-	    byte[] archivoBytes = GeneradorConvenioWord.generar("plantilla_acta_pps.docx", datos, destino);
+	    byte[] archivoBytes = GeneradorConvenioWord.generar("PlantillaDoc/plantilla_acta_pps.docx", datos, destino);
 
 	    // Guardar en BD
 	    this.crearConvenio(

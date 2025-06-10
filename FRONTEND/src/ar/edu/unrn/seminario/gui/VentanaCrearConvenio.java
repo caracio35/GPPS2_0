@@ -144,7 +144,14 @@ public class VentanaCrearConvenio extends JFrame {
 	                LocalDate fechaInicio = LocalDate.parse(txtFechaInicio.getText(), formatter);
 	                LocalDate fechaFin = LocalDate.parse(txtFechaFin.getText(), formatter);
 
-	                // Mostrar diálogo para elegir destino del archivo
+	                // 📁 Crear un archivo temporal
+	                File archivoTemporal = File.createTempFile("convenio_temp", ".docx");
+	                archivoTemporal.deleteOnExit(); // Se borra automáticamente si no se usa
+
+	                // ❗ Intentar generar el convenio en archivo temporal
+	                api.generarYGuardarConvenio(propuesta, fechaInicio, fechaFin, archivoTemporal);
+
+	                // ✅ Solo si no lanzó excepción, ahora pedir dónde guardar realmente
 	                JFileChooser chooser = new JFileChooser();
 	                chooser.setSelectedFile(new File("convenio_" + propuesta.getTitulo().replaceAll("\\s+", "_") + ".docx"));
 	                int opcion = chooser.showSaveDialog(this);
@@ -152,14 +159,18 @@ public class VentanaCrearConvenio extends JFrame {
 
 	                File archivoDestino = chooser.getSelectedFile();
 
-	                // Llamar al método del backend para generar y guardar el convenio
-	                api.generarYGuardarConvenio(propuesta, fechaInicio, fechaFin, archivoDestino);
+	                // Copiar el archivo temporal al destino final
+	                java.nio.file.Files.copy(
+	                    archivoTemporal.toPath(),
+	                    archivoDestino.toPath(),
+	                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+	                );
 
 	                JOptionPane.showMessageDialog(this, "Convenio generado correctamente.");
-	                dispose(); // Cierra la ventana
+	                dispose();
 
 	            } catch (Exception ex) {
-	                JOptionPane.showMessageDialog(this, "Error al generar el convenio: " + ex.getMessage());
+	                JOptionPane.showMessageDialog(this, "No se puede generar el convenio: " + ex.getMessage());
 	                ex.printStackTrace();
 	            }
 	        });
