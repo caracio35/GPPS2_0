@@ -1,5 +1,4 @@
 package ar.edu.unrn.seminario.gui;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -9,15 +8,15 @@ import java.util.List;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.*;
 
-public class VerPropuestas extends JDialog {
+public class VentanaPropuestasDirector extends JDialog {
     private List<PropuestaDTO> propuestas;
     private IApi api;
-    private UsuarioDTO usuario;
+    private UsuarioDTO director;
 
-    public VerPropuestas(JFrame parent, IApi api, UsuarioDTO usuario) {
-        super(parent, "Ver Propuestas", true);
+    public VentanaPropuestasDirector(JFrame parent, IApi api, UsuarioDTO director) {
+        super(parent, "Propuestas Pendientes", true);
         this.api = api;
-        this.usuario = usuario;
+        this.director = director;
 
         JPanel panel = new JPanel() {
             @Override
@@ -37,7 +36,7 @@ public class VerPropuestas extends JDialog {
         panel.setLayout(new BorderLayout(10, 10));
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel header = new JLabel("Ver Propuestas");
+        JLabel header = new JLabel("Propuestas Pendientes de Aprobación");
         header.setFont(new Font("Segoe UI", Font.BOLD, 24));
         header.setHorizontalAlignment(SwingConstants.CENTER);
         header.setForeground(new Color(33, 150, 243));
@@ -53,10 +52,10 @@ public class VerPropuestas extends JDialog {
         };
 
         propuestas = new ArrayList<>();
-        List<PropuestaDTO> todas = api.buscarPropuestas();
+        List<PropuestaDTO> todas = api.findTodasConDetalles();
 
         for (PropuestaDTO p : todas) {
-            if (usuario.getRol() == 1 && p.getAceptados() == 1) { // alumno: propuestas aprobadas
+            if (p.getAceptados() == -1) {
                 tableModel.addRow(new Object[]{p.getTitulo(), p.getAreaDeInteres(), p.getDescripcion()});
                 propuestas.add(p);
             }
@@ -71,42 +70,49 @@ public class VerPropuestas extends JDialog {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         JButton verDetalleBtn = new JButton("Ver Detalle");
-        verDetalleBtn.setBackground(new Color(33, 150, 243));
-        verDetalleBtn.setForeground(Color.WHITE);
-        verDetalleBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        verDetalleBtn.setFocusPainted(false);
-        verDetalleBtn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-        verDetalleBtn.setEnabled(false);
+        JButton aprobarBtn = new JButton("Aprobar");
+        JButton rechazarBtn = new JButton("Rechazar");
 
-        JButton inscribirmeBtn = new JButton("Inscribirme");
-        inscribirmeBtn.setBackground(new Color(76, 175, 80));
-        inscribirmeBtn.setForeground(Color.WHITE);
-        inscribirmeBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        inscribirmeBtn.setFocusPainted(false);
-        inscribirmeBtn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-        inscribirmeBtn.setEnabled(false);
+        verDetalleBtn.setEnabled(false);
+        aprobarBtn.setEnabled(false);
+        rechazarBtn.setEnabled(false);
 
         verDetalleBtn.addActionListener(e -> mostrarDetalle(propuestasTable.getSelectedRow()));
 
-        inscribirmeBtn.addActionListener(e -> {
-            int selectedRow = propuestasTable.getSelectedRow();
-            if (selectedRow != -1) {
-                PropuestaDTO seleccionada = propuestas.get(selectedRow);
-                boolean exito = api.generarIncripcionDeAlumnoApropuesta(usuario, seleccionada);
-                JOptionPane.showMessageDialog(this, exito ? "Inscripción realizada." : "Ya estás inscrito.");
+        aprobarBtn.addActionListener(e -> {
+            int selected = propuestasTable.getSelectedRow();
+            if (selected != -1) {
+                PropuestaDTO p = propuestas.get(selected);
+                p.setAceptado(1);
+                api.actualizarEstadoPropuesta(p);
+                JOptionPane.showMessageDialog(this, "Propuesta aprobada.");
+                dispose();
+            }
+        });
+
+        rechazarBtn.addActionListener(e -> {
+            int selected = propuestasTable.getSelectedRow();
+            if (selected != -1) {
+                PropuestaDTO p = propuestas.get(selected);
+                p.setAceptado(0);
+                api.actualizarEstadoPropuesta(p);
+                JOptionPane.showMessageDialog(this, "Propuesta rechazada.");
+                dispose();
             }
         });
 
         propuestasTable.getSelectionModel().addListSelectionListener(e -> {
             boolean habilitado = propuestasTable.getSelectedRow() != -1;
             verDetalleBtn.setEnabled(habilitado);
-            inscribirmeBtn.setEnabled(habilitado);
+            aprobarBtn.setEnabled(habilitado);
+            rechazarBtn.setEnabled(habilitado);
         });
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.add(verDetalleBtn);
-        buttonPanel.add(inscribirmeBtn);
+        buttonPanel.add(aprobarBtn);
+        buttonPanel.add(rechazarBtn);
 
         JButton cerrarBtn = new JButton("Cerrar");
         cerrarBtn.setBackground(new Color(244, 67, 54));
@@ -216,3 +222,4 @@ public class VerPropuestas extends JDialog {
         return panel;
     }
 }
+

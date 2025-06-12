@@ -67,8 +67,15 @@ public class VentanaPrincipal extends JFrame {
 			menuBar.add(crearBotonMenu("Crear Propuesta", () -> {
 				CargarPropuesta crear = new CargarPropuesta(this, api, usuario);
 				crear.setVisible(true);
+				
 			}
 			));
+			menuBar.add(crearBotonMenu("Cargar Tarea", () -> {
+				VentanaEntregasAlumno entrega = new VentanaEntregasAlumno(api, usuario);
+				entrega.setVisible(true);
+			}
+			));
+			
 		} else if (rol.equals("tutor")) {
 			menuBar.add(crearBotonMenu("", () -> {}));
 			menuBar.add(crearBotonMenu("Evaluar Alumno", () -> {}));
@@ -86,6 +93,10 @@ public class VentanaPrincipal extends JFrame {
 			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
 				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);
 				ventanaListado.setVisible(true);
+			}));
+			menuBar.add(crearBotonMenu("Ver Propuesta", () -> {
+				VentanaPropuestasDirector ver = new VentanaPropuestasDirector(this, api, usuario);
+				ver.setVisible(true);
 			}));
 			
 		}

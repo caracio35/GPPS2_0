@@ -2,7 +2,7 @@ package ar.edu.unrn.seminario.modelo;
 import java.time.LocalDateTime;
 
 public class Entrega {
-    private int id;
+    
     private int actividadId;
     private LocalDateTime fechaEntrega;
     private byte[] archivoEntregado;
@@ -19,9 +19,7 @@ public class Entrega {
         this.nombreArchivo = nombreArchivo;
     }
 
-    // Getters y setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+  
 
     public int getActividadId() { return actividadId; }
     public void setActividadId(int actividadId) { this.actividadId = actividadId; }

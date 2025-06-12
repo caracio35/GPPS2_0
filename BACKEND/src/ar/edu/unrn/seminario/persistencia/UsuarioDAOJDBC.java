@@ -69,10 +69,39 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 		// TODO Auto-generated method stub
 
 	}
-
-	@Override
 	public Usuario find(String username) {
-		return null;
+	    Connection conn = null;
+	    PreparedStatement stmt = null;
+	    ResultSet rs = null;
+	    Usuario usuario = null;
+
+	    try {
+	        conn = ConnectionManager.getConnection();
+	        stmt = conn.prepareStatement("SELECT * FROM usuario WHERE usuario = ?");
+	        stmt.setString(1, username);
+	        rs = stmt.executeQuery();
+
+	        if (rs.next()) {
+	            String pass = rs.getString("contrasena");
+	            String email = rs.getString("email");
+	            boolean activo = rs.getBoolean("activo");
+	            int rolId = rs.getInt("rol");
+	            String dni = rs.getString("persona");
+
+	            Rol rol = buscarRolPorId(conn, rolId);
+	            Persona persona = buscarPersonaPorDni(conn, dni);
+
+	            usuario = new Usuario(username, pass, email, activo, rol, persona);
+	        } else {
+	            System.out.println("⚠️ No se encontró el usuario con nombre: " + username);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        ConnectionManager.disconnect();
+	    }
+
+	    return usuario;
 	}
 
 	@Override

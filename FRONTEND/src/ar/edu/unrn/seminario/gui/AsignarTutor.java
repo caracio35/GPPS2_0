@@ -65,6 +65,7 @@ import java.util.List;
 				}
 				PropuestaDTO seleccionada = propuestas.get(fila);
 				new SeleccionarProfesorYTutor(api, seleccionada).setVisible(true);
+				dispose();
 			});
 		}
 	}

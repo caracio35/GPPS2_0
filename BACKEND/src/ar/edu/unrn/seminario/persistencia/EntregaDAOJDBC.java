@@ -6,8 +6,9 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-public class EntregaDAOJDBC {
+public class EntregaDAOJDBC implements EntregaDAO{
 
+	@Override
     public void guardar(Entrega entrega) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -27,10 +28,6 @@ public class EntregaDAOJDBC {
 
             stmt.executeUpdate();
 
-            rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                entrega.setId(rs.getInt(1));
-            }
 
         } catch (SQLException e) {
             System.out.println("Error al guardar entrega: " + e.getMessage());
@@ -40,6 +37,7 @@ public class EntregaDAOJDBC {
         }
     }
 
+	@Override
     public Entrega buscarPorId(int id) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -56,7 +54,7 @@ public class EntregaDAOJDBC {
             rs = stmt.executeQuery();
             if (rs.next()) {
                 entrega = new Entrega();
-                entrega.setId(rs.getInt("id"));
+                //entrega.setId(rs.getInt("id"));
                 entrega.setActividadId(rs.getInt("actividad_id"));
 
                 Timestamp timestamp = rs.getTimestamp("fecha_entrega");
@@ -75,4 +73,6 @@ public class EntregaDAOJDBC {
 
         return entrega;
     }
+    
+    
 }

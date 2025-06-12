@@ -22,5 +22,12 @@ public interface PropuestaDAO {
         List<Propuesta> findAllCompleto();
 
         boolean asignarAlumnoAPropuesta(Usuario usuario, Propuesta propuesta);
-    }
+        
+        Propuesta findPropuestaPorAlumno(Usuario alumno);
+        
+        boolean asignarProfesorYTutorAPropuesta(String tituloPropuesta, String usuarioProfesor, String usuarioTutor);
+        
+        void actualizarEstado(String titulo, int estado);
+}
+    
     

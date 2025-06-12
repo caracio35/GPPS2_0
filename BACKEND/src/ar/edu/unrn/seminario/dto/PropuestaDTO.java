@@ -49,7 +49,9 @@ public class PropuestaDTO {
     public String getTitulo() {
         return titulo;
     }
-
+    public void setAceptado(int aceptado) {
+    	this.aceptados = aceptado;
+    }
     public String getDescripcion() {
         return descripcion;
     }

@@ -8,8 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ar.edu.unrn.seminario.persistencia.ActividadDAO;
+import ar.edu.unrn.seminario.persistencia.ActividadDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.ConvenioDAO;
 import ar.edu.unrn.seminario.persistencia.ConvenioDAOJDBC;
+import ar.edu.unrn.seminario.persistencia.EntregaDAO;
 import ar.edu.unrn.seminario.persistencia.PersonaDAOJDBC;
 import ar.edu.unrn.seminario.persistencia.PropuestaDAO;
 import ar.edu.unrn.seminario.persistencia.PropuestaDAOJDBC;
@@ -29,6 +32,11 @@ import ar.edu.unrn.seminario.modelo.Persona;
 import ar.edu.unrn.seminario.modelo.Propuesta;
 import ar.edu.unrn.seminario.modelo.Rol;
 import ar.edu.unrn.seminario.modelo.Usuario;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+
+import ar.edu.unrn.seminario.modelo.Entrega;
+import ar.edu.unrn.seminario.persistencia.EntregaDAOJDBC;
 
 public class PersistenceApi implements IApi {
 
@@ -36,6 +44,8 @@ public class PersistenceApi implements IApi {
 	private UsuarioDao usuarioDao;
 	private PropuestaDAO propuestaDao;
 	private ConvenioDAO convenioDao ;
+	private EntregaDAO entregaDao ;
+	private ActividadDAO actividadDao ;
 	 
 
 	public PersistenceApi() {
@@ -43,6 +53,8 @@ public class PersistenceApi implements IApi {
 		usuarioDao = new UsuarioDAOJDBC();
 		propuestaDao = new PropuestaDAOJDBC();
 		convenioDao = new ConvenioDAOJDBC();
+		entregaDao = new EntregaDAOJDBC();
+		actividadDao = new ActividadDAOJDBC();
 	}
 
 	@Override
@@ -275,8 +287,7 @@ public class PersistenceApi implements IApi {
 	
 	@Override
 	public boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor) {
-		// TODO Auto-generated method stub
-		return false;
+	    return propuestaDao.asignarProfesorYTutorAPropuesta(propuesta.getTitulo(), profesor.getUsername(), tutor.getUsername());
 	}
 	
 	@Override
@@ -374,7 +385,60 @@ public class PersistenceApi implements IApi {
 	    
 	    convenioDao.create(convenio);
 	}
+	
+	@Override
+	public void registrarEntrega(String nombreActividad, File archivo) {
+	    try {
+	    	
+	    	int idActividad = actividadDao.obtenerIdPorNombre(nombreActividad);
+	        byte[] bytes = Files.readAllBytes(archivo.toPath());
+	        Entrega entrega = new Entrega();
+	        entrega.setActividadId(idActividad);
+	        entrega.setFechaEntrega(LocalDateTime.now());
+	        entrega.setArchivoEntregado(bytes);
+	        entrega.setNombreArchivo(archivo.getName());
+
+	        entregaDao.guardar(entrega);
+	    } catch (IOException e) {
+	        throw new RuntimeException("Error al leer el archivo para entrega", e);
+	    }
+	}
+	
+	@Override
+	public PropuestaDTO obtenerPropuestaDeAlumno(String username) {
+		Usuario alumno = usuarioDao.find(username);
+	    if (alumno == null) {
+	        System.out.println("No se encontró el usuario con username: " + username);
+	        return null;
+	    }
+
+	    Propuesta propuesta = propuestaDao.findPropuestaPorAlumno(alumno);
+	    if (propuesta == null) {
+	        System.out.println("El alumno no está asignado a ninguna propuesta. Usuario: " + username);
+	        return null;
+	    }
+
+		    return new PropuestaDTO(
+		        propuesta.getTitulo(),
+		        propuesta.getDescripcion(),
+		        propuesta.getAreaDeInteres(),
+		        propuesta.getObjetivo(),
+		        propuesta.getComentarios(),
+		        propuesta.getAceptados(),
+		        usuarioADTO(propuesta.getCreador()),
+		        usuarioADTO(propuesta.getAlumno()),
+		        usuarioADTO(propuesta.getProfesor()),
+		        usuarioADTO(propuesta.getTutor()),
+		        listaActividadesDTO(propuesta.getActividades())
+		    );
+		}
+	@Override
+	public void actualizarEstadoPropuesta(PropuestaDTO propuesta) {
+		  
+		    propuestaDao.actualizarEstado(propuesta.getTitulo(), propuesta.getAceptados());
 		
+	}
+
 		
 	
 	//////////////////////////////////////////Metodos privados que se pueden usuar /////////////////////////////////////
@@ -439,7 +503,36 @@ public class PersistenceApi implements IApi {
 	    }
 	    return actividades;
 	}
+	@Override
+	public List<PropuestaDTO> findTodasConDetalles() {
+	    List<Propuesta> propuestas = propuestaDao.findAllCompleto();
+	    List<PropuestaDTO> dtos = new ArrayList<>();
 
+	    for (Propuesta p : propuestas) {
+	        PropuestaDTO dto = new PropuestaDTO(
+	            p.getTitulo(),
+	            p.getDescripcion(),
+	            p.getAreaDeInteres(),
+	            p.getObjetivo(),
+	            p.getComentarios(),
+	            p.getAceptados(),
+	            usuarioADTO(p.getCreador()),
+	            usuarioADTO(p.getAlumno()),
+	            usuarioADTO(p.getProfesor()),
+	            usuarioADTO(p.getTutor()),
+	            listaActividadesDTO(p.getActividades())
+	        );
+	        dtos.add(dto);
+	    }
+
+	    return dtos;
+	}
+
+
+	
+
+	
+	
 	
 
 	

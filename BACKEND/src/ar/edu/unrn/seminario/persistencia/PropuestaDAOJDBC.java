@@ -373,5 +373,102 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
         return new Usuario(usuario, "", email, activo, rol, persona);
     }
 
+
+    @Override
+    public Propuesta findPropuestaPorAlumno(Usuario alumno) {
+        Propuesta propuesta = null;
+
+        String sql = "SELECT p.*, " +
+                     "uc.usuario AS creador, uc.email AS creador_email, uc.activo AS creador_activo, uc.rol AS creador_rol, c.dni AS creador_dni, c.nombre AS creador_nombre, c.apellido AS creador_apellido, " +
+                     "ua.usuario AS alumno, ua.email AS alumno_email, ua.activo AS alumno_activo, ua.rol AS alumno_rol, a.dni AS alumno_dni, a.nombre AS alumno_nombre, a.apellido AS alumno_apellido, " +
+                     "ut.usuario AS tutor, ut.email AS tutor_email, ut.activo AS tutor_activo, ut.rol AS tutor_rol, t.dni AS tutor_dni, t.nombre AS tutor_nombre, t.apellido AS tutor_apellido, " +
+                     "up.usuario AS profesor, up.email AS profesor_email, up.activo AS profesor_activo, up.rol AS profesor_rol, pr.dni AS profesor_dni, pr.nombre AS profesor_nombre, pr.apellido AS profesor_apellido " +
+                     "FROM propuesta p " +
+                     "LEFT JOIN usuario uc ON p.creador = uc.usuario " +
+                     "LEFT JOIN persona c ON uc.persona = c.dni " +
+                     "LEFT JOIN usuario ua ON p.alumno = ua.usuario " +
+                     "LEFT JOIN persona a ON ua.persona = a.dni " +
+                     "LEFT JOIN usuario ut ON p.tutor = ut.usuario " +
+                     "LEFT JOIN persona t ON ut.persona = t.dni " +
+                     "LEFT JOIN usuario up ON p.profesor = up.usuario " +
+                     "LEFT JOIN persona pr ON up.persona = pr.dni " +
+                     "WHERE p.alumno = ?";
+
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, alumno.getUsuario());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int propuestaId = rs.getInt("id");
+
+                    Usuario creador = construirUsuarioCompleto(conn, rs, "creador");
+                    Usuario alumnoEncontrado = construirUsuarioCompleto(conn, rs, "alumno");
+                    Usuario tutor = construirUsuarioCompleto(conn, rs, "tutor");
+                    Usuario profesor = construirUsuarioCompleto(conn, rs, "profesor");
+
+                    List<Actividad> actividades = obtenerActividadesPorPropuestaId(conn, propuestaId);
+
+                    propuesta = new Propuesta(
+                        rs.getString("titulo"),
+                        rs.getString("descripcion"),
+                        rs.getString("area_interes"),
+                        rs.getString("objetivo"),
+                        rs.getString("comentarios"),
+                        rs.getInt("aceptada"),
+                        creador,
+                        alumnoEncontrado,
+                        profesor,
+                        tutor,
+                        actividades
+                    );
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error al buscar propuesta por alumno: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return propuesta;
+    }
+    
+    public boolean asignarProfesorYTutorAPropuesta(String tituloPropuesta, String usuarioProfesor, String usuarioTutor) {
+        String sql = "UPDATE propuesta SET profesor = ?, tutor = ? WHERE titulo = ?";
+
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, usuarioProfesor);
+            stmt.setString(2, usuarioTutor);
+            stmt.setString(3, tituloPropuesta);
+
+            int filasActualizadas = stmt.executeUpdate();
+            return filasActualizadas > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error al asignar profesor y tutor: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    @Override
+    public void actualizarEstado(String titulo, int estado) {
+        String sql = "UPDATE propuesta SET aceptada = ? WHERE titulo = ?";
+        
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, estado);
+            stmt.setString(2, titulo);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error al actualizar estado de propuesta: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 	
 }

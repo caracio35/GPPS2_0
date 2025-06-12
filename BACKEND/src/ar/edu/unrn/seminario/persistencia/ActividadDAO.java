@@ -10,6 +10,7 @@ public interface ActividadDAO {
     void update(Actividad actividad);
     void remove(Actividad actividad);
     Actividad find(int id);
-    public List<Actividad> findAllPorPropuesta(String nombre);
+    List<Actividad> findAllPorPropuesta(String nombre);
+    int obtenerIdPorNombre(String nombre);
 
 }

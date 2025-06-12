@@ -130,6 +130,39 @@ public class ActividadDAOJDBC implements ActividadDAO{
 
         return actividades;
     }
+
+	@Override
+	public int obtenerIdPorNombre(String nombre) {
+		 int id = -1;
+		    Connection conn = null;
+		    PreparedStatement stmt = null;
+		    ResultSet rs = null;
+
+		    try {
+		        conn = ConnectionManager.getConnection();
+		        String sql = "SELECT id FROM actividad WHERE nombre_actividad = ?";
+		        stmt = conn.prepareStatement(sql);
+		        stmt.setString(1, nombre);
+		        rs = stmt.executeQuery();
+
+		        if (rs.next()) {
+		            id = rs.getInt("id");
+		        }
+		    } catch (SQLException e) {
+		        System.out.println("Error al buscar ID de actividad: " + e.getMessage());
+		        e.printStackTrace();
+		    } finally {
+		        try {
+		            if (rs != null) rs.close();
+		            if (stmt != null) stmt.close();
+		            if (conn != null) conn.close();
+		        } catch (SQLException e) {
+		            e.printStackTrace();
+		        }
+		    }
+
+		    return id;
+		}
 }
 
 

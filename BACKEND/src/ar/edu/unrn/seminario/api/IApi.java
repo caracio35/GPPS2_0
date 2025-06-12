@@ -47,4 +47,12 @@ public interface IApi {
 	List<PropuestaDTO> buscarPropuestasParaConvenio();
 	
 	void generarYGuardarConvenio(PropuestaDTO propuesta, LocalDate fechaInicio, LocalDate fechaFin, File destino) throws Exception;
+	
+	void registrarEntrega(String nombreActividad, File archivo);
+	
+	PropuestaDTO obtenerPropuestaDeAlumno(String username);
+	
+	void actualizarEstadoPropuesta(PropuestaDTO propuesta);
+	
+	List<PropuestaDTO> findTodasConDetalles();
 }
