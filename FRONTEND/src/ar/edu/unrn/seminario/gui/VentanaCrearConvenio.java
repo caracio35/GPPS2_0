@@ -13,6 +13,12 @@ import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
+
+import org.jdatepicker.impl.DateComponentFormatter;
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
 
 public class VentanaCrearConvenio extends JFrame {
 
@@ -20,7 +26,7 @@ public class VentanaCrearConvenio extends JFrame {
 	    private JTextField txtEntidad, txtAlumno, txtDniAlumno;
 	    private JTextField txtTutor, txtEntidadTutor;
 	    private JTextField txtProfesor, txtDniProfesor;
-	    private JTextField txtFechaInicio, txtFechaFin;
+	    private JDatePickerImpl datePickerInicio, datePickerFin;
 	    private IApi api;
 	    private PropuestaDTO propuesta;
 
@@ -106,17 +112,26 @@ public class VentanaCrearConvenio extends JFrame {
 	        lblFechaInicio.setBounds(20, 350, 200, 20);
 	        getContentPane().add(lblFechaInicio);
 
-	        txtFechaInicio = new JTextField("dd/mm/aaaa");
-	        txtFechaInicio.setBounds(250, 350, 150, 25);
-	        getContentPane().add(txtFechaInicio);
+	        UtilDateModel modelInicio = new UtilDateModel();
+	        Properties p = new Properties();
+	        p.put("text.today", "Hoy");
+	        p.put("text.month", "Mes");
+	        p.put("text.year", "Año");
+	        JDatePanelImpl datePanelInicio = new JDatePanelImpl(modelInicio, p);
+	        datePickerInicio = new JDatePickerImpl(datePanelInicio, new DateComponentFormatter());
+	        datePickerInicio.setBounds(250, 350, 150, 25);
+	        getContentPane().add(datePickerInicio);
 
 	        JLabel lblFechaFin = new JLabel("Fecha de Finalización:");
 	        lblFechaFin.setBounds(20, 390, 200, 20);
 	        getContentPane().add(lblFechaFin);
 
-	        txtFechaFin = new JTextField("dd/mm/aaaa");
-	        txtFechaFin.setBounds(250, 390, 150, 25);
-	        getContentPane().add(txtFechaFin);
+	        UtilDateModel modelFin = new UtilDateModel();
+	        JDatePanelImpl datePanelFin = new JDatePanelImpl(modelFin, p);
+	        datePickerFin = new JDatePickerImpl(datePanelFin, new DateComponentFormatter());
+	        datePickerFin.setBounds(250, 390, 150, 25);
+	        datePickerFin.getJFormattedTextField().setEditable(false); // <-- Solo lectura
+	        getContentPane().add(datePickerFin);
 
 	        JButton btnCrear = new JButton("Crear Convenio");
 	        btnCrear.setBounds(192, 460, 150, 30);
@@ -130,19 +145,27 @@ public class VentanaCrearConvenio extends JFrame {
 	        // ✅ Cargar automáticamente los datos desde la propuesta
 	        cargarDatosDesdePropuesta();
 	        
-	        txtFechaInicio.addFocusListener(new FocusAdapter() {
+	        datePickerInicio.addFocusListener(new FocusAdapter() {
 	            @Override
 	            public void focusLost(FocusEvent e) {
 	                calcularFechaFinDesdeActividades();
 	            }
 	        });
 	        
+	        // Cuando cambia la fecha de inicio, recalcular la fecha de fin
+	        datePickerInicio.addActionListener(e -> calcularFechaFinDesdeActividades());
+	        
 	        btnCrear.addActionListener(e -> {
 	            try {
 	                // Validar fechas
-	                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	                LocalDate fechaInicio = LocalDate.parse(txtFechaInicio.getText(), formatter);
-	                LocalDate fechaFin = LocalDate.parse(txtFechaFin.getText(), formatter);
+	                java.util.Date selectedInicio = (java.util.Date) datePickerInicio.getModel().getValue();
+	                java.util.Date selectedFin = (java.util.Date) datePickerFin.getModel().getValue();
+	                if (selectedInicio == null || selectedFin == null) {
+	                    JOptionPane.showMessageDialog(this, "Seleccioná ambas fechas.");
+	                    return;
+	                }
+	                LocalDate fechaInicio = selectedInicio.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+	                LocalDate fechaFin = selectedFin.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
 
 	                // 📁 Crear un archivo temporal
 	                File archivoTemporal = File.createTempFile("convenio_temp", ".docx");
@@ -175,47 +198,58 @@ public class VentanaCrearConvenio extends JFrame {
 	            }
 	        });
 	    }
+	    
+	    // Método para calcular la fecha de fin automáticamente
 	    private void calcularFechaFinDesdeActividades() {
-	    	 try {
-	    	        // Formato esperado
-	    	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	    	        String fechaInicioTexto = txtFechaInicio.getText();
-	    	        LocalDate fechaInicio = LocalDate.parse(fechaInicioTexto, formatter);
+	        try {
+	            // Obtener la fecha de inicio desde el datePickerInicio
+	            java.util.Date selectedInicio = (java.util.Date) datePickerInicio.getModel().getValue();
+	            if (selectedInicio == null) {
+	                datePickerFin.getModel().setSelected(false);
+	                return;
+	            }
+	            LocalDate fechaInicio = selectedInicio.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
 
-	    	        // Validar que no sea menor a hoy
-	    	        if (fechaInicio.isBefore(LocalDate.now())) {
-	    	            JOptionPane.showMessageDialog(this, "La fecha de inicio no puede ser anterior a hoy.");
-	    	            txtFechaFin.setText("");
-	    	            return;
-	    	        }
+	            // Validar que no sea menor a hoy
+	            if (fechaInicio.isBefore(LocalDate.now())) {
+	                JOptionPane.showMessageDialog(this, "La fecha de inicio no puede ser anterior a hoy.");
+	                datePickerFin.getModel().setSelected(false);
+	                return;
+	            }
 
-	    	        // Sumar horas de actividades
-	    	        int totalHoras = propuesta.getActividades()
-	    	                                  .stream()
-	    	                                  .mapToInt(ActividadDTO::getHoras)
-	    	                                  .sum();
+	            // Sumar horas de actividades
+	            int totalHoras = propuesta.getActividades()
+                                      .stream()
+                                      .mapToInt(ActividadDTO::getHoras)
+                                      .sum();
 
-	    	        int horasPorDia = 4;
-	    	        int diasNecesarios = (int) Math.ceil((double) totalHoras / horasPorDia);
+	            int horasPorDia = 4;
+	            int diasNecesarios = (int) Math.ceil((double) totalHoras / horasPorDia);
 
-	    	        // Avanzar solo días hábiles
-	    	        LocalDate fechaFin = fechaInicio;
-	    	        int diasContados = 0;
-	    	        while (diasContados < diasNecesarios) {
-	    	            fechaFin = fechaFin.plusDays(1);
-	    	            DayOfWeek diaSemana = fechaFin.getDayOfWeek();
-	    	            if (diaSemana != DayOfWeek.SATURDAY && diaSemana != DayOfWeek.SUNDAY) {
-	    	                diasContados++;
-	    	            }
-	    	        }
+	            // Avanzar solo días hábiles
+	            LocalDate fechaFin = fechaInicio;
+	            int diasContados = 0;
+	            while (diasContados < diasNecesarios) {
+	                fechaFin = fechaFin.plusDays(1);
+	                DayOfWeek diaSemana = fechaFin.getDayOfWeek();
+	                if (diaSemana != DayOfWeek.SATURDAY && diaSemana != DayOfWeek.SUNDAY) {
+	                    diasContados++;
+	                }
+	            }
 
-	    	        txtFechaFin.setText(fechaFin.format(formatter));
+	            // Setear la fecha de fin en el datePickerFin
+	            datePickerFin.getModel().setDate(
+	                fechaFin.getYear(),
+	                fechaFin.getMonthValue() - 1,
+	                fechaFin.getDayOfMonth()
+	            );
+	            datePickerFin.getModel().setSelected(true);
 
-	    	    } catch (Exception e) {
-	    	        JOptionPane.showMessageDialog(this, "Error al calcular la fecha de fin. Usá formato dd/MM/yyyy.");
-	    	        e.printStackTrace();
-	    	    }
-	    	}
+	        } catch (Exception e) {
+	            JOptionPane.showMessageDialog(this, "Error al calcular la fecha de fin.");
+	            e.printStackTrace();
+	        }
+	    }
 
 	    private void cargarDatosDesdePropuesta() {
 	        if (propuesta != null) {
