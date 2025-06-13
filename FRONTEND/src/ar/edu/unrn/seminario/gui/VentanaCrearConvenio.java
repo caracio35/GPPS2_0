@@ -12,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
@@ -157,32 +158,60 @@ public class VentanaCrearConvenio extends JFrame {
 	        
 	        btnCrear.addActionListener(e -> {
 	            try {
-	                // Validar fechas
+	                // Verificar si ya existe convenio en base de datos
+	                if (api.convenioYaExiste(propuesta)) {
+	                    JOptionPane.showMessageDialog(this, "Ya existe un convenio para esta propuesta. Se generará el archivo con las fechas guardadas.");
+
+	                    // Obtener fechas del convenio ya existente
+	                    LocalDate fechaInicio = api.obtenerFechaInicioConvenio(propuesta);
+	                    LocalDate fechaFin = api.obtenerFechaFinConvenio(propuesta);
+
+	                    // Crear archivo temporal y generar Word
+	                    File archivoTemporal = File.createTempFile("convenio_existente", ".docx");
+	                    archivoTemporal.deleteOnExit();
+	                    api.generarWordDesdeConvenioExistente(propuesta, fechaInicio, fechaFin, archivoTemporal);
+
+	                    // Pedir ubicación de guardado
+	                    JFileChooser chooser = new JFileChooser();
+	                    chooser.setSelectedFile(new File("convenio_" + propuesta.getTitulo().replaceAll("\\s+", "_") + ".docx"));
+	                    int opcion = chooser.showSaveDialog(this);
+	                    if (opcion != JFileChooser.APPROVE_OPTION) return;
+
+	                    File archivoDestino = chooser.getSelectedFile();
+	                    java.nio.file.Files.copy(
+	                        archivoTemporal.toPath(),
+	                        archivoDestino.toPath(),
+	                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+	                    );
+
+	                    JOptionPane.showMessageDialog(this, "Archivo de convenio existente generado.");
+	                    dispose();
+	                    return;
+	                }
+
+	                // Si no existe, validar fechas seleccionadas
 	                java.util.Date selectedInicio = (java.util.Date) datePickerInicio.getModel().getValue();
 	                java.util.Date selectedFin = (java.util.Date) datePickerFin.getModel().getValue();
 	                if (selectedInicio == null || selectedFin == null) {
 	                    JOptionPane.showMessageDialog(this, "Seleccioná ambas fechas.");
 	                    return;
 	                }
-	                LocalDate fechaInicio = selectedInicio.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
-	                LocalDate fechaFin = selectedFin.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
 
-	                // 📁 Crear un archivo temporal
-	                File archivoTemporal = File.createTempFile("convenio_temp", ".docx");
-	                archivoTemporal.deleteOnExit(); // Se borra automáticamente si no se usa
+	                LocalDate fechaInicio = selectedInicio.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	                LocalDate fechaFin = selectedFin.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-	                // ❗ Intentar generar el convenio en archivo temporal
+	                // Crear archivo temporal y generar convenio nuevo
+	                File archivoTemporal = File.createTempFile("convenio_nuevo", ".docx");
+	                archivoTemporal.deleteOnExit();
 	                api.generarYGuardarConvenio(propuesta, fechaInicio, fechaFin, archivoTemporal);
 
-	                // ✅ Solo si no lanzó excepción, ahora pedir dónde guardar realmente
+	                // Pedir ubicación de guardado
 	                JFileChooser chooser = new JFileChooser();
 	                chooser.setSelectedFile(new File("convenio_" + propuesta.getTitulo().replaceAll("\\s+", "_") + ".docx"));
 	                int opcion = chooser.showSaveDialog(this);
 	                if (opcion != JFileChooser.APPROVE_OPTION) return;
 
 	                File archivoDestino = chooser.getSelectedFile();
-
-	                // Copiar el archivo temporal al destino final
 	                java.nio.file.Files.copy(
 	                    archivoTemporal.toPath(),
 	                    archivoDestino.toPath(),

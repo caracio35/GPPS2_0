@@ -533,7 +533,44 @@ public class PersistenceApi implements IApi {
 	    return dtos;
 	}
 
+	@Override
+	public boolean convenioYaExiste(PropuestaDTO propuesta) throws ExcepcionPersistencia {
+	    return convenioDao.existeConvenioParaPropuesta(propuesta.getTitulo());
+	}
 
+	@Override
+	public LocalDate obtenerFechaInicioConvenio(PropuestaDTO propuesta) throws ExcepcionPersistencia {
+	    return convenioDao.obtenerFechaInicio(propuesta.getTitulo());
+	}
+
+	@Override
+	public LocalDate obtenerFechaFinConvenio(PropuestaDTO propuesta) throws ExcepcionPersistencia {
+	    return convenioDao.obtenerFechaFin(propuesta.getTitulo());
+	}
+
+	@Override
+	public void generarWordDesdeConvenioExistente(PropuestaDTO propuesta, LocalDate fechaInicio, LocalDate fechaFin, File destino) throws Exception {
+	    Map<String, String> datos = new HashMap<>();
+	    datos.put("entidad", propuesta.getCreador().getUsername());
+	    datos.put("dni_entidad", propuesta.getCreador().getPersona().getDni());
+	    datos.put("nombre_estudiante", propuesta.getAlumno().getPersona().getNombre() + " " + propuesta.getAlumno().getPersona().getApellido());
+	    datos.put("dni_estudiante", propuesta.getAlumno().getPersona().getDni());
+	    datos.put("nombre_tutor", propuesta.getTutor().getPersona().getNombre() + " " + propuesta.getTutor().getPersona().getApellido());
+	    datos.put("dni_tutor", propuesta.getTutor().getPersona().getDni());
+	    datos.put("nombre_supervisor", propuesta.getProfesor().getPersona().getNombre() + " " + propuesta.getProfesor().getPersona().getApellido());
+	    datos.put("dni_supervisor", propuesta.getProfesor().getPersona().getDni());
+	    datos.put("objetivo", propuesta.getObjetivo());
+
+	    int i = 1;
+	    for (ActividadDTO act : propuesta.getActividades()) {
+	        datos.put("actividad" + i, act.getNombre());
+	        datos.put("horas" + i, String.valueOf(act.getHoras()));
+	        i++;
+	        if (i > 3) break;
+	    }
+
+	    GeneradorConvenioWord.generar("PlantillaDoc/plantilla_acta_pps.docx", datos, destino);
+	}
 	
 
 	

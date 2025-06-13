@@ -59,4 +59,13 @@ public interface IApi {
 	void actualizarEstadoPropuesta(PropuestaDTO propuesta) throws ExcepcionPersistencia;
 	
 	List<PropuestaDTO> findTodasConDetalles() throws ExcepcionPersistencia;
+	
+	boolean convenioYaExiste(PropuestaDTO propuesta) throws ExcepcionPersistencia;
+	
+	LocalDate obtenerFechaInicioConvenio(PropuestaDTO propuesta) throws ExcepcionPersistencia;
+	
+	LocalDate obtenerFechaFinConvenio(PropuestaDTO propuesta) throws ExcepcionPersistencia;
+
+	void generarWordDesdeConvenioExistente(PropuestaDTO propuesta, LocalDate fechaInicio, LocalDate fechaFin,
+			File destino) throws Exception;
 }

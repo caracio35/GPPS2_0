@@ -138,7 +138,7 @@ public class VentanaPropuestasDirector extends JDialog {
         buttonPanel.add(rechazarBtn);
 
         JButton cerrarBtn = new JButton("Cerrar");
-        cerrarBtn.setBackground(new Color(244, 67, 54));
+        cerrarBtn.setBackground(Color.WHITE);
         cerrarBtn.setForeground(Color.WHITE);
         cerrarBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         cerrarBtn.setFocusPainted(false);
@@ -164,7 +164,7 @@ public class VentanaPropuestasDirector extends JDialog {
         PropuestaDTO propuesta = propuestas.get(selectedRow);
 
         JDialog detalle = new JDialog(this, "Detalle de Propuesta", true);
-        detalle.setLayout(new BorderLayout(10, 10));
+        detalle.getContentPane().setLayout(new BorderLayout(10, 10));
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -208,8 +208,8 @@ public class VentanaPropuestasDirector extends JDialog {
         JPanel btnPanel = new JPanel();
         btnPanel.add(cerrar);
 
-        detalle.add(panel, BorderLayout.CENTER);
-        detalle.add(btnPanel, BorderLayout.SOUTH);
+        detalle.getContentPane().add(panel, BorderLayout.CENTER);
+        detalle.getContentPane().add(btnPanel, BorderLayout.SOUTH);
         detalle.setSize(500, 550);
         detalle.setLocationRelativeTo(this);
         detalle.setVisible(true);

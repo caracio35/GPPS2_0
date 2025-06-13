@@ -107,15 +107,19 @@ public class VentanaPrincipal extends JFrame {
 				AltaUsuario ventanaAltaUsuario = new AltaUsuario(api);
 				ventanaAltaUsuario.setVisible(true);	
 			}));
-			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
-				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);
-				ventanaListado.setVisible(true);
-			}));
 			menuBar.add(crearBotonMenu("Ver Propuesta", () -> {
 				VentanaPropuestasDirector ver = new VentanaPropuestasDirector(this, api, usuario);
 				ver.setVisible(true);
 			}));
-			
+		}else if (rol.equals("administrador")) {
+			menuBar.add(crearBotonMenu("Crear Convenio", () -> {
+				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);
+				ventanaListado.setVisible(true);
+			}));
+			menuBar.add(crearBotonMenu("Descargar Convenio", () -> {
+				ListadoParaConvenio ventanaListado = new ListadoParaConvenio(api);
+				ventanaListado.setVisible(true);
+			}));
 		}
 	}
 

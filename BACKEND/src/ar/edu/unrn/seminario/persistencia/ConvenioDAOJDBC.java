@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 import ar.edu.unrn.seminario.exception.ExcepcionAplicacion;
 import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
@@ -45,6 +46,51 @@ public class ConvenioDAOJDBC implements ConvenioDAO{
 	        throw new ExcepcionAplicacion("Error inesperado al crear convenio: " + e.getMessage(), e);
 	    } finally {
 	        ConnectionManager.disconnect();
+	    }
+	}
+	@Override
+	public boolean existeConvenioParaPropuesta(String tituloPropuesta) throws ExcepcionPersistencia {
+	    try (Connection conn = ConnectionManager.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM convenio c JOIN propuesta p ON c.propuesta_id = p.id WHERE p.titulo = ?");
+	        stmt.setString(1, tituloPropuesta);
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getInt(1) > 0;
+	        }
+	    } catch (SQLException e) {
+	        throw new ExcepcionPersistencia("Error al verificar si ya existe convenio: " + e.getMessage());
+	    }
+	    return false;
+	}
+	
+	@Override
+	public LocalDate obtenerFechaInicio(String tituloPropuesta) throws ExcepcionPersistencia {
+	    try (Connection conn = ConnectionManager.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement("SELECT c.fecha_inicio FROM convenio c JOIN propuesta p ON c.propuesta_id = p.id WHERE p.titulo = ?");
+	        stmt.setString(1, tituloPropuesta);
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getDate("fecha_inicio").toLocalDate();
+	        } else {
+	            throw new ExcepcionPersistencia("No se encontró el convenio.");
+	        }
+	    } catch (SQLException e) {
+	        throw new ExcepcionPersistencia("Error al obtener fecha inicio: " + e.getMessage());
+	    }
+	}
+	@Override
+	public LocalDate obtenerFechaFin(String tituloPropuesta) throws ExcepcionPersistencia {
+	    try (Connection conn = ConnectionManager.getConnection()) {
+	        PreparedStatement stmt = conn.prepareStatement("SELECT c.fecha_fin FROM convenio c JOIN propuesta p ON c.propuesta_id = p.id WHERE p.titulo = ?");
+	        stmt.setString(1, tituloPropuesta);
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getDate("fecha_fin").toLocalDate();
+	        } else {
+	            throw new ExcepcionPersistencia("No se encontró el convenio.");
+	        }
+	    } catch (SQLException e) {
+	        throw new ExcepcionPersistencia("Error al obtener fecha fin: " + e.getMessage());
 	    }
 	}
 
