@@ -342,6 +342,7 @@ public class PersistenceApi implements IApi {
 	    datos.put("nombre_supervisor", propuesta.getProfesor().getPersona().getNombre() + " " + propuesta.getProfesor().getPersona().getApellido());
 	    datos.put("dni_supervisor", propuesta.getProfesor().getPersona().getDni());
 	    datos.put("objetivo", propuesta.getObjetivo());
+	    datos.put("Descripcion", propuesta.getDescripcion());
 
 	    int i = 1;
 	    for (ActividadDTO act : propuesta.getActividades()) {
@@ -560,6 +561,7 @@ public class PersistenceApi implements IApi {
 	    datos.put("nombre_supervisor", propuesta.getProfesor().getPersona().getNombre() + " " + propuesta.getProfesor().getPersona().getApellido());
 	    datos.put("dni_supervisor", propuesta.getProfesor().getPersona().getDni());
 	    datos.put("objetivo", propuesta.getObjetivo());
+	    datos.put("Descripcion", propuesta.getDescripcion());
 
 	    int i = 1;
 	    for (ActividadDTO act : propuesta.getActividades()) {
