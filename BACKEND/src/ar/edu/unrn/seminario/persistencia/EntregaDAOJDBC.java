@@ -1,5 +1,6 @@
 package ar.edu.unrn.seminario.persistencia;
 
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Entrega;
 
 import java.sql.*;
@@ -9,7 +10,7 @@ import java.time.ZoneId;
 public class EntregaDAOJDBC implements EntregaDAO{
 
 	@Override
-    public void guardar(Entrega entrega) {
+    public void guardar(Entrega entrega) throws ExcepcionPersistencia {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -30,15 +31,14 @@ public class EntregaDAOJDBC implements EntregaDAO{
 
 
         } catch (SQLException e) {
-            System.out.println("Error al guardar entrega: " + e.getMessage());
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al guardar entrega: " + e.getMessage());
         } finally {
-            ConnectionManager.disconnect(); // Cierra conexión global (si tu clase lo maneja así)
+            ConnectionManager.disconnect();
         }
     }
 
 	@Override
-    public Entrega buscarPorId(int id) {
+    public Entrega buscarPorId(int id) throws ExcepcionPersistencia {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -64,9 +64,8 @@ public class EntregaDAOJDBC implements EntregaDAO{
                 entrega.setNombreArchivo(rs.getString("nombre_archivo"));
             }
 
-        } catch (SQLException e) {
-            System.out.println("Error al buscar entrega: " + e.getMessage());
-            e.printStackTrace();
+        }  catch (SQLException e) {
+            throw new ExcepcionPersistencia("Error al buscar entrega: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }

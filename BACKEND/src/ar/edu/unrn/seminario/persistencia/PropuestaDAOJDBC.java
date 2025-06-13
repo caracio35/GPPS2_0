@@ -1,5 +1,8 @@
 package ar.edu.unrn.seminario.persistencia;
 
+import ar.edu.unrn.seminario.exception.DatosNoEncontradosException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Actividad;
 import ar.edu.unrn.seminario.modelo.Persona;
 import ar.edu.unrn.seminario.modelo.Propuesta;
@@ -10,12 +13,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PropuestaDAOJDBC implements PropuestaDAO{
 
-    public void create(Propuesta propuesta) {
+    public void create(Propuesta propuesta) throws DuplicadaException, ExcepcionPersistencia {
     	 Connection conn = null;
          PreparedStatement statement = null;
 
@@ -57,17 +61,18 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
              //Guardamos las actividades desde este DAO directamente
              guardarActividades(conn, propuesta.getActividades(), propuesta.getTitulo());
 
-         } catch (SQLException e) {
-             System.out.println("Error al insertar propuesta: " + e.getMessage());
-             e.printStackTrace(); // Podés lanzar una excepción propia si querés
-         } finally {
-             ConnectionManager.disconnect();
-         } 
+         } catch (SQLIntegrityConstraintViolationException e) {
+        	    throw new DuplicadaException("Ya existe una propuesta con el mismo identificador.");
+        	} catch (SQLException e) {
+        	    throw new ExcepcionPersistencia("Error al insertar propuesta: " + e.getMessage());
+        	} finally {
+        	    ConnectionManager.disconnect();
+        	}
      }
 
 
     @Override
-    public void update(Propuesta propuesta) {
+    public void update(Propuesta propuesta) throws DuplicadaException, ExcepcionPersistencia {
         Connection conn = null;
         PreparedStatement statement = null;
 
@@ -100,10 +105,10 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
 
             statement.executeUpdate();
 
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new DuplicadaException("Ya existe una propuesta con los mismos datos.");
         } catch (SQLException e) {
-            System.out.println("Error al actualizar propuesta: " + e.getMessage());
-            // TODO: Crear y lanzar excepción propia
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al actualizar propuesta: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }
@@ -119,7 +124,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
         return null;
     }
     @Override
-    public List<Propuesta> findSoloConCreador() {
+    public List<Propuesta> findSoloConCreador() throws ExcepcionPersistencia {
         List<Propuesta> propuestas = new ArrayList<>();
 
         String sql = "SELECT p.*, per.dni AS creador_dni, per.nombre AS creador_nombre, per.apellido AS creador_apellido, " +
@@ -169,8 +174,8 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al obtener propuestas básicas: " + e.getMessage());
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al obtener propuestas básicas: " + e.getMessage());
+        
         }
 
         return propuestas;
@@ -178,7 +183,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
     
     
     @Override
-    public List<Propuesta> findAllCompleto() {
+    public List<Propuesta> findAllCompleto() throws ExcepcionPersistencia {
         List<Propuesta> propuestas = new ArrayList<>();
 
         String sql = "SELECT p.*, " +
@@ -227,16 +232,15 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
                 propuestas.add(propuesta);
             }
 
-        } catch (SQLException e) {
-            System.out.println("Error al obtener propuestas completas: " + e.getMessage());
-            e.printStackTrace();
+        }catch (SQLException e) {
+            throw new ExcepcionPersistencia("Error al obtener propuestas completas: " + e.getMessage());
         }
 
         return propuestas;
     }
     
     @Override
-    public boolean asignarAlumnoAPropuesta(Usuario usuario, Propuesta propuesta){
+    public boolean asignarAlumnoAPropuesta(Usuario usuario, Propuesta propuesta) throws ExcepcionPersistencia{
     	  String buscarUsuario = "SELECT usuario FROM usuario WHERE usuario = ?";
     	    String buscarIdPropuesta = "SELECT id FROM propuesta WHERE titulo = ?";
     	    String verificarInscripcion = "SELECT COUNT(*) FROM propuesta WHERE alumno = ?";
@@ -249,8 +253,8 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
     	            stmt.setString(1, usuario.getUsuario());
     	            ResultSet rs = stmt.executeQuery();
     	            if (!rs.next()) {
-    	                System.out.println("Usuario no encontrado: " + usuario.getUsuario());
-    	                return false;
+    	            	  throw new DatosNoEncontradosException("Usuario no encontrado: " + usuario.getUsuario());
+    	                
     	            }
     	        }
 
@@ -262,8 +266,8 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
     	            if (rs.next()) {
     	                propuestaId = rs.getInt("id");
     	            } else {
-    	                System.out.println("No se encontró la propuesta con título: " + propuesta.getTitulo());
-    	                return false;
+    	            	throw new DatosNoEncontradosException("Propuesta no encontrada: " + propuesta.getTitulo());
+    	               
     	            }
     	        }
 
@@ -272,8 +276,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
     	            stmt.setString(1, usuario.getUsuario());
     	            ResultSet rs = stmt.executeQuery();
     	            if (rs.next() && rs.getInt(1) > 0) {
-    	                System.out.println("El alumno ya está inscrito en una propuesta.");
-    	                return false;
+    	            	  throw new DuplicadaException("El alumno ya está inscrito en una propuesta.");
     	            }
     	        }
 
@@ -281,13 +284,16 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
     	        try (PreparedStatement stmt = conn.prepareStatement(updatePropuesta)) {
     	            stmt.setString(1, usuario.getUsuario());
     	            stmt.setInt(2, propuestaId);
-    	            return stmt.executeUpdate() > 0;
+    	            int filas = stmt.executeUpdate();
+    	            if (filas == 0) {
+    	                throw new ExcepcionPersistencia("No se pudo asignar el alumno a la propuesta.");
+    	            }
     	        }
 
     	    } catch (SQLException e) {
-    	        System.out.println("Error al asignar alumno a propuesta: " + e.getMessage());
-    	        return false;
+    	        throw new ExcepcionPersistencia("Error al asignar alumno a propuesta: " + e.getMessage());
     	    }
+			return false;
     	}
     
     
@@ -303,7 +309,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
                 if (rs.next()) {
                     propuestaId = rs.getInt("id");
                 } else {
-                    throw new SQLException("No se encontró propuesta con título: " + tituloPropuesta);
+                	 throw new DatosNoEncontradosException("No se encontró propuesta con título: " + tituloPropuesta);
                 }
             }
         }
@@ -375,7 +381,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
 
 
     @Override
-    public Propuesta findPropuestaPorAlumno(Usuario alumno) {
+    public Propuesta findPropuestaPorAlumno(Usuario alumno) throws ExcepcionPersistencia {
         Propuesta propuesta = null;
 
         String sql = "SELECT p.*, " +
@@ -427,14 +433,14 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
             }
 
         } catch (SQLException e) {
-            System.out.println("❌ Error al buscar propuesta por alumno: " + e.getMessage());
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al buscar propuesta por alumno: " + e.getMessage());
+       
         }
 
         return propuesta;
     }
     
-    public boolean asignarProfesorYTutorAPropuesta(String tituloPropuesta, String usuarioProfesor, String usuarioTutor) {
+    public boolean asignarProfesorYTutorAPropuesta(String tituloPropuesta, String usuarioProfesor, String usuarioTutor) throws ExcepcionPersistencia {
         String sql = "UPDATE propuesta SET profesor = ?, tutor = ? WHERE titulo = ?";
 
         try (Connection conn = ConnectionManager.getConnection();
@@ -448,14 +454,12 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
             return filasActualizadas > 0;
 
         } catch (SQLException e) {
-            System.out.println("❌ Error al asignar profesor y tutor: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            throw new ExcepcionPersistencia("Error al asignar profesor y tutor: " + e.getMessage());
         }
     }
     
     @Override
-    public void actualizarEstado(String titulo, int estado) {
+    public void actualizarEstado(String titulo, int estado) throws ExcepcionPersistencia {
         String sql = "UPDATE propuesta SET aceptada = ? WHERE titulo = ?";
         
         try (Connection conn = ConnectionManager.getConnection();
@@ -466,8 +470,7 @@ public class PropuestaDAOJDBC implements PropuestaDAO{
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("❌ Error al actualizar estado de propuesta: " + e.getMessage());
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al actualizar estado de propuesta: " + e.getMessage());
         }
     }
 	

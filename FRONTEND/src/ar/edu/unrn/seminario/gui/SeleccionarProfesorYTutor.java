@@ -3,6 +3,8 @@ package ar.edu.unrn.seminario.gui;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +22,15 @@ public class SeleccionarProfesorYTutor extends JDialog {
 	public SeleccionarProfesorYTutor(IApi api, PropuestaDTO propuesta) {
 		
 		
-		this.todosLosUsuario = api.obtenerUsuarios();
+		try {
+		    this.todosLosUsuario = api.obtenerUsuarios();
+		} catch (ConexionFallidaException e) {
+		    JOptionPane.showMessageDialog(this,
+		        "No se pudieron obtener los usuarios.\n" + e.getMessage(),
+		        "Error de conexión",
+		        JOptionPane.ERROR_MESSAGE);
+		    this.todosLosUsuario = new ArrayList<>(); 
+		}
 
 	    // Filtrar los usuarios según el rol
 	    this.profesores = new ArrayList<>();
@@ -85,12 +95,21 @@ public class SeleccionarProfesorYTutor extends JDialog {
 			UsuarioDTO profesor = profesores.get(profesorIndex);
 			UsuarioDTO tutor = tutores.get(tutorIndex);
 
-			boolean asignado = api.asignarProfesorYTutorAPropuesta(propuesta, profesor, tutor);
-			if (asignado) {
-				JOptionPane.showMessageDialog(this, "Asignación exitosa.");
-				dispose();
-			} else {
-				JOptionPane.showMessageDialog(this, "Error al asignar. Intente de nuevo.");
+			try {
+			    boolean asignado = api.asignarProfesorYTutorAPropuesta(propuesta, profesor, tutor);
+
+			    if (asignado) {
+			        JOptionPane.showMessageDialog(this, "Asignación exitosa.");
+			        dispose();
+			    } else {
+			        JOptionPane.showMessageDialog(this, "No se pudo asignar el profesor o tutor. Intente nuevamente.");
+			    }
+
+			} catch (ExcepcionPersistencia e1) {
+			    JOptionPane.showMessageDialog(this,
+			        "Error al intentar asignar profesor y tutor:\n" + e1.getMessage(),
+			        "Error de base de datos",
+			        JOptionPane.ERROR_MESSAGE);
 			}
 		});
 	}

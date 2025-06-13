@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -21,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
 
     public class ListadoUsuario extends JFrame {
 
@@ -58,35 +60,46 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
         }
 
         private void cargarUsuarios(IApi api) {
-            List<UsuarioDTO> usuarios = api.obtenerUsuarios();
+        	List<UsuarioDTO> usuarios = new ArrayList<>();
+        	try {
+        	    usuarios = api.obtenerUsuarios();
+        	} catch (ConexionFallidaException e) {
+        	    JOptionPane.showMessageDialog(this, e.getMessage(), "Error al cargar usuarios", JOptionPane.ERROR_MESSAGE);
+        	}
 
-            for (UsuarioDTO usuario : usuarios) {
-                RolDTO rol = api.obtenerRolPorCodigo(usuario.getRol());
+        	for (UsuarioDTO usuario : usuarios) {
+        	    RolDTO rol;
+        	    try {
+        	        rol = api.obtenerRolPorCodigo(usuario.getRol());
+        	    } catch (ConexionFallidaException e) {
+        	        JOptionPane.showMessageDialog(this,
+        	            "No se pudo obtener el rol del usuario: " + usuario.getUsername() + "\n" + e.getMessage(),
+        	            "Error de conexión",
+        	            JOptionPane.ERROR_MESSAGE);
+        	        continue; // Salta este usuario y evita null
+        	    }
 
-                String nombre = (usuario.getPersona() != null)
-                        ? usuario.getPersona().getNombre()
-                        : "(sin persona)";
+        	    UsuarioDTO copia = new UsuarioDTO(
+        	        usuario.getUsername(),
+        	        usuario.getPassword(),
+        	        usuario.getPersona(),
+        	        usuario.getEmail(),
+        	        rol.getCodigo(),
+        	        usuario.isActivo(),
+        	        usuario.getEstado()
+        	    ) {
+        	        @Override
+        	        public String toString() {
+        	            String nombre = (getPersona() != null)
+        	                    ? getPersona().getNombre()
+        	                    : "(sin persona)";
+        	            return getUsername() + " - " + nombre + " - " + getEmail() + " - " + rol.getNombre();
+        	        }
+        	    };
 
-                // Modificamos el toString dinámicamente (solo para mostrar en combo)
-                UsuarioDTO copia = new UsuarioDTO(
-                        usuario.getUsername(),
-                        usuario.getPassword(),
-                        usuario.getPersona(),
-                        usuario.getEmail(),
-                        rol.getCodigo(),
-                        usuario.isActivo(),
-                        usuario.getEstado()
-                        
-                ) {
-                    @Override
-                    public String toString() {
-                        return getUsername() + " - " + nombre + " - " + getEmail() + " - " + rol.getNombre();
-                    }
-                };
-
-                comboUsuarios.addItem(copia);
-            }
-        }
+        	    comboUsuarios.addItem(copia);
+        	}
+        	}
         private void ingresarSegunRol(IApi api ) {
     	    UsuarioDTO usuario = (UsuarioDTO) comboUsuarios.getSelectedItem();
 
@@ -95,13 +108,20 @@ import ar.edu.unrn.seminario.dto.UsuarioDTO;
     	        return;
     	    }
 
-    	    // Obtener el nombre del rol desde la base usando el codigo de rol
-    	    RolDTO rolDTO = api.obtenerRolPorCodigo(usuario.getRol()); 
-    	    if (rolDTO == null) {
-    	        JOptionPane.showMessageDialog(this, "❌ Rol no encontrado para el usuario.");
-    	        return;
+    	    RolDTO rolDTO = null;
+    	    try {
+    	        rolDTO = api.obtenerRolPorCodigo(usuario.getRol());
+    	        if (rolDTO == null) {
+    	            JOptionPane.showMessageDialog(this, "❌ Rol no encontrado para el usuario: " + usuario.getUsername());
+    	             
+    	        }
+    	    } catch (ConexionFallidaException e) {
+    	        JOptionPane.showMessageDialog(this, "❌ Error al obtener el rol desde la base de datos: " + e.getMessage(), 
+    	                                      "Error de conexión", JOptionPane.ERROR_MESSAGE);
+    	        
     	    }
 
+    	    
     	    String rol = rolDTO.getNombre().toLowerCase();
 
     	    switch (rol) {

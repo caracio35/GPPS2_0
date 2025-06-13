@@ -11,19 +11,36 @@ import java.util.List;
 
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.*;
+import ar.edu.unrn.seminario.exception.DatosNoEncontradosException;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 public class VentanaEntregasAlumno extends JFrame {
 
-    private final IApi api;
-    private final UsuarioDTO alumno;
-    private final PropuestaDTO propuesta;
+    private IApi api;
+    private UsuarioDTO alumno;
+    private PropuestaDTO propuesta;
     private JTable tablaActividades;
     private JButton btnEntregarSeleccionada;
 
     public VentanaEntregasAlumno(IApi api, UsuarioDTO alumno) {
         this.api = api;
         this.alumno = alumno;
-        this.propuesta = api.obtenerPropuestaDeAlumno(alumno.getUsername());
+        
+        try {
+            this.propuesta = api.obtenerPropuestaDeAlumno(alumno.getUsername());
+        } catch (DatosNoEncontradosException e) {
+            JOptionPane.showMessageDialog(this,
+                "El alumno no tiene una propuesta asignada.",
+                "Propuesta no encontrada",
+                JOptionPane.INFORMATION_MESSAGE);
+            this.propuesta = null; 
+        } catch (ExcepcionPersistencia e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al buscar la propuesta del alumno:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE);
+            this.propuesta = null;
+        }
 
         setTitle("Entregas de Actividades");
         setSize(700, 400);

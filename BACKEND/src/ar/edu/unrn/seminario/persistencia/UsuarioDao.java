@@ -2,10 +2,13 @@ package  ar.edu.unrn.seminario.persistencia;
 
 import java.util.List;
 
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.DatosNoEncontradosException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
 import ar.edu.unrn.seminario.modelo.Usuario;
 
 public interface UsuarioDao {
-	void create(Usuario Usuario);
+	void create(Usuario Usuario) throws DuplicadaException;
 
 	void update(Usuario Usuario);
 
@@ -13,8 +16,8 @@ public interface UsuarioDao {
 
 	void remove(Usuario Usuario);
 
-	Usuario find(String username);
+	Usuario find(String username) throws DatosNoEncontradosException;
 
-	List<Usuario> findAll();
+	List<Usuario> findAll() throws ConexionFallidaException;
 
 }

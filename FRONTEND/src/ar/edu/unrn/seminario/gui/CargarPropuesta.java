@@ -8,6 +8,9 @@ import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.ActividadDTO;
 import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -190,9 +193,17 @@ public class CargarPropuesta extends JDialog {
 				actividades
 			);
 
-			api.crearPropuesta(propuesta);
-			JOptionPane.showMessageDialog(this, "Propuesta creada correctamente.");
-			dispose();
+			try {
+			    api.crearPropuesta(propuesta);
+			    JOptionPane.showMessageDialog(this, "Propuesta creada correctamente.");
+			    dispose();
+			} catch (ConexionFallidaException e1) {
+			    JOptionPane.showMessageDialog(this, e1.getMessage(), "Error de conexión", JOptionPane.ERROR_MESSAGE);
+			} catch (DuplicadaException e1) {
+			    JOptionPane.showMessageDialog(this, e1.getMessage(), "Propuesta duplicada", JOptionPane.WARNING_MESSAGE);
+			} catch (ExcepcionPersistencia e1) {
+			    JOptionPane.showMessageDialog(this, e1.getMessage(), "Error de base de datos", JOptionPane.ERROR_MESSAGE);
+			}
 		});
 	}
 }

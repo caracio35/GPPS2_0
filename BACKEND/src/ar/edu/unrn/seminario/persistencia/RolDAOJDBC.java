@@ -4,16 +4,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
 import ar.edu.unrn.seminario.modelo.Rol;
 
 public class RolDAOJDBC implements RolDao {
 
 	@Override
-	public void create(Rol rol) {
+	public void create(Rol rol) throws DuplicadaException, ConexionFallidaException {
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
@@ -23,10 +26,10 @@ public class RolDAOJDBC implements RolDao {
 			statement.setString(1, rol.getNombre());
 			statement.setString(2, rol.getDescripcion());
 			statement.executeUpdate();
+		} catch (SQLIntegrityConstraintViolationException e) {
+			throw new DuplicadaException("El nombre del rol ya existe.");
 		} catch (SQLException e) {
-			System.out.println("Error al insertar rol: " + e.getMessage());
-			// TODO: disparar Exception propia
-			e.printStackTrace();
+			throw new ConexionFallidaException("Error al insertar rol: " + e.getMessage());
 		} finally {
 			ConnectionManager.disconnect();
 		}
@@ -57,7 +60,7 @@ public class RolDAOJDBC implements RolDao {
 	}
 
 	@Override
-	public Rol find(Integer id) {
+	public Rol find(Integer id) throws ConexionFallidaException {
 		Rol rol = null;
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -69,12 +72,7 @@ public class RolDAOJDBC implements RolDao {
 				rol = new Rol(rs.getInt("id"), rs.getString("nombre"), rs.getString("descripcion"));
 			}
 		} catch (SQLException e) {
-			System.out.println("Error al procesar consulta");
-			// TODO: disparar Exception propia
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO: disparar Exception propia
-			e.printStackTrace();
+			throw new ConexionFallidaException("Error al buscar rol: " + e.getMessage());
 		} finally {
 			ConnectionManager.disconnect();
 		}
@@ -82,7 +80,7 @@ public class RolDAOJDBC implements RolDao {
 	}
 
 	@Override
-	public List<Rol> findAll() {
+	public List<Rol> findAll() throws ConexionFallidaException {
 		List<Rol> listado = new ArrayList<Rol>();
 		Statement sentencia = null;
 		ResultSet resultado = null;
@@ -97,10 +95,8 @@ public class RolDAOJDBC implements RolDao {
 						resultado.getString("descripcion"));
 				listado.add(rol);
 			}
-		} catch (SQLException e) {
-			System.out.println("Error de mySql\n" + e.toString());
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+		}catch (SQLException e) {
+			throw new ConexionFallidaException("Error al obtener roles: " + e.getMessage());
 			
 		} finally {
 			ConnectionManager.disconnect();

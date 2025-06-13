@@ -16,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.RolDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
 
 public class AltaUsuario extends JFrame {
 
@@ -36,7 +37,11 @@ public class AltaUsuario extends JFrame {
 	public AltaUsuario(IApi api) {
 
 		// Obtengo los roles
-		this.roles = api.obtenerRoles();
+		try {
+		    this.roles = api.obtenerRoles();
+		} catch (ConexionFallidaException e) {
+		    JOptionPane.showMessageDialog(this, e.getMessage(), "Error de conexión", JOptionPane.ERROR_MESSAGE);
+		}
 
 		setTitle("Alta Usuario");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

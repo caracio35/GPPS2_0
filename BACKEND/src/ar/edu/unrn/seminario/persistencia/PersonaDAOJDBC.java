@@ -1,10 +1,13 @@
 package ar.edu.unrn.seminario.persistencia;
 
+import java.sql.SQLException;
+
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Persona;
 
 public class PersonaDAOJDBC {
 
-    public void create(Persona persona) {
+    public void create(Persona persona) throws ExcepcionPersistencia {
         java.sql.Connection conn = null;
         java.sql.PreparedStatement statement = null;
         try {
@@ -15,16 +18,14 @@ public class PersonaDAOJDBC {
             statement.setString(2, persona.getNombre());
             statement.setString(3, persona.getApellido());
             statement.executeUpdate();
-        } catch (java.sql.SQLException e) {
-            System.out.println("Error al insertar persona: " + e.getMessage());
-            // TODO: disparar Exception propia
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new ExcepcionPersistencia("Error al insertar persona: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }
     }
 
-    public Persona find(String personaDni) {
+    public Persona find(String personaDni) throws ExcepcionPersistencia {
         Persona persona = null;
         java.sql.Connection conn = null;
         java.sql.PreparedStatement statement = null;
@@ -41,10 +42,8 @@ public class PersonaDAOJDBC {
                         rs.getString("nombre"),
                         rs.getString("apellido"));
             }
-        } catch (java.sql.SQLException e) {
-            System.out.println("Error al buscar persona: " + e.getMessage());
-            // TODO: disparar Exception propia
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new ExcepcionPersistencia("Error al buscar persona: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }

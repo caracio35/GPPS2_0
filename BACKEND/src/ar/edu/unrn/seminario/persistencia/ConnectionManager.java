@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+
 public class ConnectionManager {
 	private static String DRIVER = "com.mysql.jdbc.Driver";
 	private static String URL_DB = "jdbc:mysql://localhost:3306/";
@@ -12,12 +14,11 @@ public class ConnectionManager {
 	protected static String pass = "";
 	protected static Connection conn = null;
 
-	public static void connect() {
+	public static void connect() throws ConexionFallidaException {
 		try {
 			conn = DriverManager.getConnection(URL_DB + DB, user, pass);
 		} catch (SQLException sqlEx) {
-			System.out.println("No se ha podido conectar a " + URL_DB + DB + ". " + sqlEx.getMessage());
-			System.out.println("Error al cargar el driver");
+			throw new ConexionFallidaException("No se pudo conectar: " + sqlEx.getMessage());
 		}
 	}
 
@@ -32,18 +33,18 @@ public class ConnectionManager {
 		}
 	}
 
-	public static void reconnect() {
+	public static void reconnect() throws ConexionFallidaException {
 		disconnect();
 		connect();
 	}
 
-	public static Connection getConnection() {
+	public static Connection getConnection() throws ConexionFallidaException {
 		try {
 			if (conn == null || conn.isClosed()) {
-				connect();
+				connect(); 
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new ConexionFallidaException("Error al verificar el estado de la conexión: " + e.getMessage());
 		}
 		return conn;
 	}

@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
 
 public class VentanaPrincipal extends JFrame {
 
@@ -39,7 +40,23 @@ public class VentanaPrincipal extends JFrame {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		RolDTO rolDto = api.obtenerRolPorCodigo(usuario.getRol());
+		RolDTO rolDto;
+		try {
+		    rolDto = api.obtenerRolPorCodigo(usuario.getRol());
+		    if (rolDto == null) {
+		        JOptionPane.showMessageDialog(this,
+		            "No se encontró un rol válido para el usuario.",
+		            "Rol no encontrado",
+		            JOptionPane.WARNING_MESSAGE);
+		        return; 
+		    }
+		} catch (ConexionFallidaException e) {
+		    JOptionPane.showMessageDialog(this,
+		        "Error al obtener el rol desde la base de datos:\n" + e.getMessage(),
+		        "Error de conexión",
+		        JOptionPane.ERROR_MESSAGE);
+		    return; 
+		}
 		String nombreRol = rolDto.getNombre().toLowerCase();
 
 		inicializarMenuPorRol(menuBar, nombreRol, api, usuario);

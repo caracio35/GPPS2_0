@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.*;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 public class VerPropuestas extends JDialog {
     private List<PropuestaDTO> propuestas;
@@ -53,7 +55,15 @@ public class VerPropuestas extends JDialog {
         };
 
         propuestas = new ArrayList<>();
-        List<PropuestaDTO> todas = api.buscarPropuestas();
+        List<PropuestaDTO> todas = new ArrayList<>();
+        try {
+            todas = api.buscarPropuestas();
+        } catch (ExcepcionPersistencia e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al buscar las propuestas:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE);
+        }
 
         for (PropuestaDTO p : todas) {
             if (usuario.getRol() == 1 && p.getAceptados() == 1) { // alumno: propuestas aprobadas
@@ -92,8 +102,20 @@ public class VerPropuestas extends JDialog {
             int selectedRow = propuestasTable.getSelectedRow();
             if (selectedRow != -1) {
                 PropuestaDTO seleccionada = propuestas.get(selectedRow);
-                boolean exito = api.generarIncripcionDeAlumnoApropuesta(usuario, seleccionada);
-                JOptionPane.showMessageDialog(this, exito ? "Inscripción realizada." : "Ya estás inscrito.");
+                boolean exito;
+
+                try {
+                    exito = api.generarIncripcionDeAlumnoApropuesta(usuario, seleccionada);
+                } catch (ConexionFallidaException | ExcepcionPersistencia e1) {
+                    JOptionPane.showMessageDialog(this,
+                         e1.getMessage(),
+                        "Error de inscripción",
+                        JOptionPane.ERROR_MESSAGE);
+                    return; 
+                }
+
+                JOptionPane.showMessageDialog(this,
+                    exito ? "Inscripción realizada correctamente." : "Ya estás inscrito en una propuesta.");
             }
         });
 

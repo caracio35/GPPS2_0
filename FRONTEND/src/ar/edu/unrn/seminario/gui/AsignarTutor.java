@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.PropuestaDTO;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 import java.awt.*;
 import java.util.List;
@@ -46,7 +47,11 @@ import java.util.List;
 			btnAsignar.setBounds(480, 300, 200, 30);
 			getContentPane().add(btnAsignar);
 
-			propuestas = api.buscarPropuestasParaAsignarTutores();
+			try {
+			    propuestas = api.buscarPropuestasParaAsignarTutores();
+			} catch (ExcepcionPersistencia e) {
+			    JOptionPane.showMessageDialog(this, e.getMessage(), "Error al obtener propuestas", JOptionPane.ERROR_MESSAGE);
+			}
 			for (PropuestaDTO p : propuestas) {
 				if (p.getAceptados() == 1 && p.getProfesor() == null && p.getAlumno() != null) {
 					modelo.addRow(new Object[] {

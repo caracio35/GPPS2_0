@@ -1,5 +1,6 @@
 package ar.edu.unrn.seminario.persistencia;
 
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Actividad;
 
 import java.sql.Connection;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActividadDAOJDBC implements ActividadDAO{
-    public void create(Actividad actividad, String nombreDePropuesta) {
+    public void create(Actividad actividad, String nombreDePropuesta) throws ExcepcionPersistencia {
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -41,10 +42,8 @@ public class ActividadDAOJDBC implements ActividadDAO{
                 throw new RuntimeException("No se encontró la propuesta con título: " + nombreDePropuesta);
             }
 
-        } catch (SQLException e) {
-            System.out.println("Error al crear actividad: " + e.getMessage());
-            // TODO: Crear y lanzar excepción propia
-            e.printStackTrace();
+        }catch (SQLException e) {
+            throw new ExcepcionPersistencia("Error al crear actividad: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }
@@ -60,7 +59,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
 
     }
 
-    public Actividad find(int id) {
+    public Actividad find(int id) throws ExcepcionPersistencia {
             Actividad actividad = null;
             Connection conn = null;
             PreparedStatement statement = null;
@@ -84,9 +83,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
                 }
 
             } catch (SQLException e) {
-                System.out.println("Error al buscar actividad: " + e.getMessage());
-                // TODO: Crear y lanzar excepción propia
-                e.printStackTrace();
+                throw new ExcepcionPersistencia("Error al buscar actividad: " + e.getMessage());
             } finally {
                 ConnectionManager.disconnect();
             }
@@ -95,7 +92,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
         }
 
     @Override
-    public List<Actividad> findAllPorPropuesta(String nombrePropuesta) {
+    public List<Actividad> findAllPorPropuesta(String nombrePropuesta) throws ExcepcionPersistencia {
         List<Actividad> actividades = new ArrayList<>();
         Connection conn = null;
         PreparedStatement statement = null;
@@ -121,9 +118,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al buscar actividades por propuesta: " + e.getMessage());
-            // TODO: Crear y lanzar excepción propia
-            e.printStackTrace();
+            throw new ExcepcionPersistencia("Error al buscar actividades por propuesta: " + e.getMessage());
         } finally {
             ConnectionManager.disconnect();
         }
@@ -132,7 +127,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
     }
 
 	@Override
-	public int obtenerIdPorNombre(String nombre) {
+	public int obtenerIdPorNombre(String nombre) throws ExcepcionPersistencia {
 		 int id = -1;
 		    Connection conn = null;
 		    PreparedStatement stmt = null;
@@ -149,8 +144,7 @@ public class ActividadDAOJDBC implements ActividadDAO{
 		            id = rs.getInt("id");
 		        }
 		    } catch (SQLException e) {
-		        System.out.println("Error al buscar ID de actividad: " + e.getMessage());
-		        e.printStackTrace();
+		        throw new ExcepcionPersistencia("Error al buscar ID de actividad: " + e.getMessage());
 		    } finally {
 		        try {
 		            if (rs != null) rs.close();

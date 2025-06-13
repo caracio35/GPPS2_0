@@ -26,6 +26,11 @@ import ar.edu.unrn.seminario.dto.PersonaDTO;
 import ar.edu.unrn.seminario.dto.PropuestaDTO;
 import ar.edu.unrn.seminario.dto.RolDTO;
 import ar.edu.unrn.seminario.dto.UsuarioDTO;
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.DatosNoEncontradosException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
+import ar.edu.unrn.seminario.exception.ExcepcionAplicacion;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Actividad;
 import ar.edu.unrn.seminario.modelo.Convenio;
 import ar.edu.unrn.seminario.modelo.Persona;
@@ -58,7 +63,7 @@ public class PersistenceApi implements IApi {
 	}
 
 	@Override
-	public void registrarUsuario(UsuarioDTO usuario) {
+	public void registrarUsuario(UsuarioDTO usuario) throws ConexionFallidaException, DuplicadaException, ExcepcionPersistencia {
 		
 		//buscar el rol en la base de datos a trabas de find
 		Rol rol = rolDao.find(usuario.getRol());
@@ -76,7 +81,7 @@ public class PersistenceApi implements IApi {
 	}
 
 	@Override
-	public List<UsuarioDTO> obtenerUsuarios() {
+	public List<UsuarioDTO> obtenerUsuarios() throws ConexionFallidaException {
 		  List<UsuarioDTO> dtos = new ArrayList<>();
 		    List<Usuario> usuarios = usuarioDao.findAll();
 
@@ -119,7 +124,7 @@ public class PersistenceApi implements IApi {
 	}
 
 	@Override
-	public List<RolDTO> obtenerRoles() {
+	public List<RolDTO> obtenerRoles() throws ConexionFallidaException {
 		List<Rol> roles = rolDao.findAll();
 		List<RolDTO> rolesDTO = new ArrayList<>(0);
 		for (Rol rol : roles) {
@@ -141,7 +146,7 @@ public class PersistenceApi implements IApi {
 	}
 
 	@Override
-	public RolDTO obtenerRolPorCodigo(Integer codigo) {
+	public RolDTO obtenerRolPorCodigo(Integer codigo) throws ConexionFallidaException {
 		Rol rol = rolDao.find(codigo);
 		RolDTO rolDTO = new RolDTO(rol.getCodigo(), rol.getNombre(), rol.getDescripcion());
 		return rolDTO;
@@ -172,7 +177,7 @@ public class PersistenceApi implements IApi {
 	}
 
 	@Override
-	public void crearPropuesta(PropuestaDTO propuesta) {
+	public void crearPropuesta(PropuestaDTO propuesta) throws ConexionFallidaException, DuplicadaException, ExcepcionPersistencia {
 		
 		 // Convertir el creador (único usuario que viene cargado)
 	    Usuario creador = convertir(propuesta.getCreador());
@@ -205,7 +210,7 @@ public class PersistenceApi implements IApi {
 	
 
 	@Override
-	public List<PropuestaDTO> buscarPropuestas() {
+	public List<PropuestaDTO> buscarPropuestas() throws ExcepcionPersistencia {
 		 List<Propuesta> propuestas = propuestaDao.findSoloConCreador();
 		    List<PropuestaDTO> dtos = new ArrayList<>();
 
@@ -227,7 +232,7 @@ public class PersistenceApi implements IApi {
 		}
 	
 	@Override
-	public boolean generarIncripcionDeAlumnoApropuesta(UsuarioDTO usuario, PropuestaDTO propuesta) {
+	public boolean generarIncripcionDeAlumnoApropuesta(UsuarioDTO usuario, PropuestaDTO propuesta) throws ConexionFallidaException, ExcepcionPersistencia {
 		
 		Usuario usu = convertir(usuario);
 		Usuario creador = convertir(propuesta.getCreador());
@@ -252,7 +257,7 @@ public class PersistenceApi implements IApi {
 	}
 	
 	@Override
-	public List<PropuestaDTO> buscarPropuestasParaAsignarTutores() {
+	public List<PropuestaDTO> buscarPropuestasParaAsignarTutores() throws ExcepcionPersistencia {
 	    List<Propuesta> propuestas = propuestaDao.findAllCompleto();
 	    List<PropuestaDTO> propuestasFiltradas = new ArrayList<>();
 
@@ -286,12 +291,12 @@ public class PersistenceApi implements IApi {
 	
 	
 	@Override
-	public boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor) {
+	public boolean asignarProfesorYTutorAPropuesta(PropuestaDTO propuesta, UsuarioDTO profesor, UsuarioDTO tutor) throws ExcepcionPersistencia {
 	    return propuestaDao.asignarProfesorYTutorAPropuesta(propuesta.getTitulo(), profesor.getUsername(), tutor.getUsername());
 	}
 	
 	@Override
-	public List<PropuestaDTO> buscarPropuestasParaConvenio() {
+	public List<PropuestaDTO> buscarPropuestasParaConvenio() throws ExcepcionPersistencia {
 		List<Propuesta> propuestas = propuestaDao.findAllCompleto(); // recupera todas las propuestas con joins
 	    List<PropuestaDTO> propuestasFiltradas = new ArrayList<>();
 
@@ -359,7 +364,7 @@ public class PersistenceApi implements IApi {
 	    );
 	}
 	
-	private void crearConvenio(PropuestaDTO propuestaDTO , LocalDate fechaInicio , LocalDate fechaFin , byte[] archivoBytes , String detino) {
+	private void crearConvenio(PropuestaDTO propuestaDTO , LocalDate fechaInicio , LocalDate fechaFin , byte[] archivoBytes , String detino) throws ConexionFallidaException, ExcepcionPersistencia, ExcepcionAplicacion {
 		
 		Propuesta propuesta = new Propuesta(
 		        propuestaDTO.getTitulo(),
@@ -387,7 +392,7 @@ public class PersistenceApi implements IApi {
 	}
 	
 	@Override
-	public void registrarEntrega(String nombreActividad, File archivo) {
+	public void registrarEntrega(String nombreActividad, File archivo) throws ExcepcionPersistencia {
 	    try {
 	    	
 	    	int idActividad = actividadDao.obtenerIdPorNombre(nombreActividad);
@@ -405,7 +410,7 @@ public class PersistenceApi implements IApi {
 	}
 	
 	@Override
-	public PropuestaDTO obtenerPropuestaDeAlumno(String username) {
+	public PropuestaDTO obtenerPropuestaDeAlumno(String username) throws DatosNoEncontradosException, ExcepcionPersistencia {
 		Usuario alumno = usuarioDao.find(username);
 	    if (alumno == null) {
 	        System.out.println("No se encontró el usuario con username: " + username);
@@ -433,7 +438,7 @@ public class PersistenceApi implements IApi {
 		    );
 		}
 	@Override
-	public void actualizarEstadoPropuesta(PropuestaDTO propuesta) {
+	public void actualizarEstadoPropuesta(PropuestaDTO propuesta) throws ExcepcionPersistencia {
 		  
 		    propuestaDao.actualizarEstado(propuesta.getTitulo(), propuesta.getAceptados());
 		
@@ -478,7 +483,7 @@ public class PersistenceApi implements IApi {
 	}
 	
 	//convierte un ususario a usuarioDTO
-	private Usuario convertir(UsuarioDTO dto) {
+	private Usuario convertir(UsuarioDTO dto) throws ConexionFallidaException {
 	    Persona persona = new Persona(
 	        dto.getPersona().getNombre(),
 	        dto.getPersona().getApellido(),
@@ -504,7 +509,7 @@ public class PersistenceApi implements IApi {
 	    return actividades;
 	}
 	@Override
-	public List<PropuestaDTO> findTodasConDetalles() {
+	public List<PropuestaDTO> findTodasConDetalles() throws ExcepcionPersistencia {
 	    List<Propuesta> propuestas = propuestaDao.findAllCompleto();
 	    List<PropuestaDTO> dtos = new ArrayList<>();
 

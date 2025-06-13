@@ -5,12 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import ar.edu.unrn.seminario.exception.ExcepcionAplicacion;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 import ar.edu.unrn.seminario.modelo.Convenio;
 
 public class ConvenioDAOJDBC implements ConvenioDAO{
 
 	@Override
-	public void create(Convenio convenio) {
+	public void create(Convenio convenio) throws ExcepcionPersistencia, ExcepcionAplicacion {
 	    Connection conn = null;
 	    PreparedStatement stmt = null;
 
@@ -37,12 +39,10 @@ public class ConvenioDAOJDBC implements ConvenioDAO{
 	            System.out.println("❌ Error al insertar el convenio.");
 	        }
 
-	    } catch (SQLException e) {
-	        System.out.println("❌ Error al procesar la consulta SQL: " + e.getMessage());
-	        e.printStackTrace();
+	    }  catch (SQLException e) {
+	        throw new ExcepcionPersistencia("Error al procesar la consulta SQL al crear el convenio: " + e.getMessage());
 	    } catch (Exception e) {
-	        System.out.println("❌ Error inesperado al crear convenio: " + e.getMessage());
-	        e.printStackTrace();
+	        throw new ExcepcionAplicacion("Error inesperado al crear convenio: " + e.getMessage(), e);
 	    } finally {
 	        ConnectionManager.disconnect();
 	    }

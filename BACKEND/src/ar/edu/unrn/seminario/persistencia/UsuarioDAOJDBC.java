@@ -4,9 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ar.edu.unrn.seminario.exception.ConexionFallidaException;
+import ar.edu.unrn.seminario.exception.DatosNoEncontradosException;
+import ar.edu.unrn.seminario.exception.DuplicadaException;
 import ar.edu.unrn.seminario.modelo.Persona;
 import ar.edu.unrn.seminario.modelo.Rol;
 import ar.edu.unrn.seminario.modelo.Usuario;
@@ -14,7 +18,7 @@ import ar.edu.unrn.seminario.modelo.Usuario;
 public class UsuarioDAOJDBC implements UsuarioDao {
 
 	@Override
-	public void create(Usuario usuario) {
+	public void create(Usuario usuario) throws DuplicadaException {
 		try {
 			// 1. Crear la persona primero
 			//Persona persona = usuario.getPersona();
@@ -35,17 +39,12 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 
 			int cantidad = statement.executeUpdate();
 			if (cantidad <= 0) {
-				System.out.println("Error al insertar usuario");
-				// TODO: disparar Exception propia
+				throw new DuplicadaException("No se pudo insertar el usuario. Verificá los datos.");
 			}
+		} catch (SQLIntegrityConstraintViolationException e) {
+			throw new DuplicadaException("Usuario duplicado: ya existe uno con ese nombre.");
 		} catch (SQLException e) {
-			System.out.println("Error al procesar consulta: " + e.getMessage());
-			// TODO: disparar Exception propia
-			e.printStackTrace();
-		} catch (Exception e) {
-			System.out.println("Error al insertar un usuario: " + e.getMessage());
-			// TODO: disparar Exception propia
-			e.printStackTrace();
+			throw new DuplicadaException("Error inesperado al insertar usuario: " + e.getMessage());
 		} finally {
 			ConnectionManager.disconnect();
 		}
@@ -69,7 +68,7 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 		// TODO Auto-generated method stub
 
 	}
-	public Usuario find(String username) {
+	public Usuario find(String username) throws DatosNoEncontradosException {
 	    Connection conn = null;
 	    PreparedStatement stmt = null;
 	    ResultSet rs = null;
@@ -93,10 +92,10 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 
 	            usuario = new Usuario(username, pass, email, activo, rol, persona);
 	        } else {
-	            System.out.println("⚠️ No se encontró el usuario con nombre: " + username);
+	        	throw new DatosNoEncontradosException("Usuario no encontrado: " + username);
 	        }
 	    } catch (SQLException e) {
-	        e.printStackTrace();
+			throw new DatosNoEncontradosException("Error al buscar usuario: " + e.getMessage());
 	    } finally {
 	        ConnectionManager.disconnect();
 	    }
@@ -105,7 +104,7 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 	}
 
 	@Override
-	public List<Usuario> findAll() {
+	public List<Usuario> findAll() throws ConexionFallidaException {
 		 List<Usuario> usuarios = new ArrayList<>();
 		    Connection conn = null;
 		    PreparedStatement stmt = null;
@@ -131,11 +130,12 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 		            usuarios.add(usuario);
 		        }
 
+		        if (usuarios.isEmpty()) {
+		            throw new DatosNoEncontradosException("No hay usuarios cargados en la base.");
+		        }
+
 		    } catch (SQLException e) {
-		        System.out.println("❌ Error al obtener usuarios: " + e.getMessage());
-		        e.printStackTrace();
-		    } finally {
-		        ConnectionManager.disconnect();
+		        throw new ConexionFallidaException("Error al obtener usuarios: " + e.getMessage());
 		    }
 
 		    return usuarios;
@@ -147,7 +147,7 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 		throw new UnsupportedOperationException("Unimplemented method 'remove'");
 	}
 	
-	private Rol buscarRolPorId(Connection conn, int id) {
+	private Rol buscarRolPorId(Connection conn, int id) throws DatosNoEncontradosException {
 	    Rol rol = null;
 	    PreparedStatement stmt = null;
 	    ResultSet rs = null;
@@ -165,22 +165,21 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 	            );
 	        }
 	    } catch (SQLException e) {
-	        System.out.println("❌ Error al buscar rol: " + e.getMessage());
-	        e.printStackTrace();
+	    	throw new DatosNoEncontradosException("Rol con ID " + id + " no encontrado.");
+	        
 	    } finally {
 	        try {
 	            if (rs != null) rs.close();
 	            if (stmt != null) stmt.close();
 	        } catch (SQLException e) {
-	            System.out.println("❌ Error cerrando recursos: " + e.getMessage());
-	            e.printStackTrace();
+	        	throw new DatosNoEncontradosException("Error al buscar rol: " + e.getMessage());
 	        }
 	    }
 
 	    return rol;
 	}
 	
-	private Persona buscarPersonaPorDni(Connection conn, String dni) {
+	private Persona buscarPersonaPorDni(Connection conn, String dni) throws DatosNoEncontradosException {
 	    Persona persona = null;
 	    PreparedStatement stmt = null;
 	    ResultSet rs = null;
@@ -198,15 +197,14 @@ public class UsuarioDAOJDBC implements UsuarioDao {
 	            );
 	        }
 	    } catch (SQLException e) {
-	        System.out.println("❌ Error al buscar persona: " + e.getMessage());
-	        e.printStackTrace();
+	    	 throw new DatosNoEncontradosException("Persona con DNI " + dni + " no encontrada.");
 	    } finally {
 	        try {
 	            if (rs != null) rs.close();
 	            if (stmt != null) stmt.close();
 	        } catch (SQLException e) {
-	            System.out.println("❌ Error cerrando recursos: " + e.getMessage());
-	            e.printStackTrace();
+	        	throw new DatosNoEncontradosException("Error al buscar persona: " + e.getMessage());
+	            
 	        }
 	    }
 

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import ar.edu.unrn.seminario.api.IApi;
 import ar.edu.unrn.seminario.dto.*;
+import ar.edu.unrn.seminario.exception.ExcepcionPersistencia;
 
 public class VentanaPropuestasDirector extends JDialog {
     private List<PropuestaDTO> propuestas;
@@ -52,7 +53,15 @@ public class VentanaPropuestasDirector extends JDialog {
         };
 
         propuestas = new ArrayList<>();
-        List<PropuestaDTO> todas = api.findTodasConDetalles();
+        List<PropuestaDTO> todas = new ArrayList<>();
+        try {
+            todas = api.findTodasConDetalles();
+        } catch (ExcepcionPersistencia e) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Error al cargar las propuestas desde la base de datos:\n" + e.getMessage(),
+                "Error de carga",
+                JOptionPane.ERROR_MESSAGE);
+        }
 
         for (PropuestaDTO p : todas) {
             if (p.getAceptados() == -1) {
@@ -84,21 +93,35 @@ public class VentanaPropuestasDirector extends JDialog {
             if (selected != -1) {
                 PropuestaDTO p = propuestas.get(selected);
                 p.setAceptado(1);
-                api.actualizarEstadoPropuesta(p);
-                JOptionPane.showMessageDialog(this, "Propuesta aprobada.");
-                dispose();
-            }
-        });
+                try {
+                    api.actualizarEstadoPropuesta(p);
+                    JOptionPane.showMessageDialog(this, "✅ Propuesta aprobada.");
+                    dispose();
+                } catch (ExcepcionPersistencia e1) {
+                    JOptionPane.showMessageDialog(this,
+                        "❌ Error al aprobar la propuesta:\n" + e1.getMessage(),
+                        "Error de base de datos",
+                        JOptionPane.ERROR_MESSAGE);
+                    
+                }
+            }});
 
         rechazarBtn.addActionListener(e -> {
             int selected = propuestasTable.getSelectedRow();
             if (selected != -1) {
                 PropuestaDTO p = propuestas.get(selected);
                 p.setAceptado(0);
-                api.actualizarEstadoPropuesta(p);
-                JOptionPane.showMessageDialog(this, "Propuesta rechazada.");
-                dispose();
-            }
+                try {
+                    api.actualizarEstadoPropuesta(p);
+                    JOptionPane.showMessageDialog(this, "❌ Propuesta rechazada.");
+                    dispose();
+                } catch (ExcepcionPersistencia e1) {
+                    JOptionPane.showMessageDialog(this,
+                        "❌ Error al rechazar la propuesta:\n" + e1.getMessage(),
+                        "Error en la base de datos",
+                        JOptionPane.ERROR_MESSAGE);
+                    
+                }}
         });
 
         propuestasTable.getSelectionModel().addListSelectionListener(e -> {
